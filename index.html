@@ -17,6 +17,14 @@
   /* Accessibility: larger text (scale ROOT so all rem-based sizes grow) */
   html.big-text { font-size: 120%; }
   html.big-text body { font-size: 1rem; }
+  /* Print: show only the print overlay area */
+  @media print {
+    body * { visibility: hidden !important; }
+    #print-overlay, #print-overlay * { visibility: visible !important; }
+    #print-overlay { position: absolute !important; inset: 0 !important; background: #fff !important; }
+    .no-print { display: none !important; }
+    @page { size: A4; margin: 16mm; }
+  }
   /* Accessibility: easier reading (more spacing) */
   body.easy-read { letter-spacing: .02em; word-spacing: .08em; line-height: 1.7; }
   body.easy-read p, body.easy-read li, body.easy-read span { line-height: 1.7; }
@@ -1958,7 +1966,7 @@ const i18n = {
     home_timer:'⏱️ Wie lange willst du heute üben?',
     home_timer_sub:'Wähle eine Zeit – du bekommst ein gemischtes Aufgabenpaket aus Grammatik, Vokabeln und Lesen.',
     home_timer_min:'Min.',
-    vocab_title:'🔤 Vokabeln', vocab_intro:'<strong>Grundwortschatz</strong> sind die wichtigsten Wörter zu jedem Thema, sortiert nach Klasse 5 und 6. <strong>Bausteine</strong> enthalten zusätzliche Wörter aus den SOUL-Bausteinen, die nicht schon im Grundwortschatz stehen. Nutze die Filter, um auszuwählen.', vocab_sub:'Lerne neue Wörter mit Karteikarten und Quiz', nav_dict:'Wörterbucharbeit', dict_title:'Wörterbucharbeit', dict_page_sub:'So nutzt du ein Wörterbuch richtig.', dict_sub:'So findest du Wörter im Wörterbuch.', dict_to_vocab:'Zu den Vokabeln', vsearch_ph:'Wort suchen (Englisch oder Deutsch)…', vsearch_hits:'Treffer', vsearch_none:'Keine Treffer.', vocab_print:'Drucken', vocab_print_blocked:'Bitte erlaube Pop-ups, um die Liste zu drucken.',
+    vocab_title:'🔤 Vokabeln', vocab_intro:'<strong>Grundwortschatz</strong> sind die wichtigsten Wörter zu jedem Thema, sortiert nach Klasse 5 und 6. <strong>Bausteine</strong> enthalten zusätzliche Wörter aus den SOUL-Bausteinen, die nicht schon im Grundwortschatz stehen. Nutze die Filter, um auszuwählen.', vocab_sub:'Lerne neue Wörter mit Karteikarten und Quiz', nav_dict:'Wörterbucharbeit', dict_title:'Wörterbucharbeit', dict_page_sub:'So nutzt du ein Wörterbuch richtig.', dict_sub:'So findest du Wörter im Wörterbuch.', dict_to_vocab:'Zu den Vokabeln', vsearch_ph:'Wort suchen (Englisch oder Deutsch)…', vsearch_hits:'Treffer', vsearch_none:'Keine Treffer.', vocab_print:'Drucken', vocab_print_back:'Zurück', vocab_print_blocked:'Bitte erlaube Pop-ups, um die Liste zu drucken.',
     vocab_filter:'Filter', vocab_all:'Alle', vocab_k5:'Klasse 5', vocab_k6:'Klasse 6', vocab_basics:'Grundwortschatz',
     grammar_title:'📚 Grammatik', grammar_sub:'Erkläre, übe und teste dein Wissen',
     grammar_rules_de:'🇩🇪 Deutsch', grammar_rules_en:'🇬🇧 English',
@@ -2284,7 +2292,7 @@ const i18n = {
     home_timer:'⏱️ How long do you want to practise today?',
     home_timer_sub:'Pick a time and get a fun mix of grammar, vocabulary and reading!',
     home_timer_min:'min.',
-    vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Learn new words with flashcards and quizzes!', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_blocked:'Please allow pop-ups to print the list.',
+    vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Learn new words with flashcards and quizzes!', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
     vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Basic Words',
     grammar_title:'📚 Grammar', grammar_sub:'Learn the rules and practise!',
     grammar_rules_de:'🇩🇪 Auf Deutsch', grammar_rules_en:'🇬🇧 In English',
@@ -2593,7 +2601,7 @@ const i18n = {
     home_timer:'⏱️ How long would you like to practise today?',
     home_timer_sub:'Select a duration and receive a mixed set of grammar, vocabulary and reading exercises.',
     home_timer_min:'min.',
-    vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Build your word bank with flashcards, quizzes and writing tasks.', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_blocked:'Please allow pop-ups to print the list.',
+    vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Build your word bank with flashcards, quizzes and writing tasks.', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
     vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Core Vocabulary',
     grammar_title:'📚 Grammar', grammar_sub:'Explanations, exercises and quizzes.',
     grammar_rules_de:'🇩🇪 In German', grammar_rules_en:'🇬🇧 In English',
@@ -4423,33 +4431,40 @@ function setVSearch(v){
 function printVocab(id){
   const t = VOCAB.find(v=>v.id===id); if(!t) return;
   const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const rows = t.words.map((w,i)=>`<tr><td class="n">${i+1}</td><td class="en">${esc(w.en)}</td><td class="de">${esc(w.de)}</td><td class="ex">${esc(w.example||'')}</td></tr>`).join('');
-  const win = window.open('', '_blank');
-  if(!win){ alert(T('vocab_print_blocked')||'Bitte Pop-ups erlauben, um zu drucken.'); return; }
-  const doc = `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${esc(t.title)}</title>
-  <style>
-    @page{ size:A4; margin:18mm 15mm; }
-    *{ box-sizing:border-box; }
-    body{ font-family:Arial,Helvetica,sans-serif; color:#111; font-size:12pt; }
-    h1{ font-size:16pt; margin:0 0 2mm; }
-    .sub{ color:#555; font-size:10pt; margin:0 0 5mm; }
-    table{ width:100%; border-collapse:collapse; }
-    th,td{ border:1px solid #999; padding:4px 6px; text-align:left; vertical-align:top; }
-    th{ background:#eee; font-size:10pt; }
-    td.n{ width:8mm; text-align:right; color:#777; }
-    td.en{ width:30%; font-weight:bold; }
-    td.de{ width:30%; }
-    td.ex{ font-style:italic; color:#333; }
-    tr{ page-break-inside:avoid; }
-  </style></head><body>
-  <h1>${esc(t.title)}</h1>
-  <p class="sub">${t.words.length} ${T('label_words')||'words'} &middot; My English Companion</p>
-  <table><thead><tr><th>#</th><th>English</th><th>Deutsch</th><th>Example</th></tr></thead><tbody>${rows}</tbody></table>
-  </body></html>`;
-  win.document.write(doc);
-  win.document.close();
-  win.focus();
-  setTimeout(()=>{ try{ win.print(); }catch(e){} }, 400);
+  const rows = t.words.map((w,i)=>`<tr>
+    <td style="border:1px solid #999;padding:4px 6px;text-align:right;color:#777;width:8mm">${i+1}</td>
+    <td style="border:1px solid #999;padding:4px 6px;font-weight:bold;width:30%">${esc(w.en)}</td>
+    <td style="border:1px solid #999;padding:4px 6px;width:30%">${esc(w.de)}</td>
+    <td style="border:1px solid #999;padding:4px 6px;font-style:italic;color:#333">${esc(w.example||'')}</td>
+  </tr>`).join('');
+  const old = document.getElementById('print-overlay'); if(old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'print-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#fff;overflow:auto;-webkit-overflow-scrolling:touch';
+  ov.innerHTML = `
+    <div class="no-print" style="position:sticky;top:0;display:flex;gap:.5rem;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#F8FAFC;border-bottom:1px solid #E2E8F0">
+      <button onclick="closePrint()" style="padding:.5rem .9rem;border-radius:.7rem;border:1.5px solid #E2E8F0;background:#fff;color:#334155;font-weight:600;font-size:.85rem;cursor:pointer">‹ ${T('vocab_print_back')||'Zurück'}</button>
+      <strong style="font-size:.88rem;color:#1E293B;text-align:center;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</strong>
+      <button onclick="window.print()" style="padding:.5rem .9rem;border-radius:.7rem;border:none;background:#2563EB;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer">🖨️ ${T('vocab_print')||'Drucken'}</button>
+    </div>
+    <div id="print-area" style="padding:1rem 1.25rem;max-width:800px;margin:0 auto;color:#111">
+      <h1 style="font-size:1.3rem;font-weight:800;margin:0 0 .2rem">${esc(t.title)}</h1>
+      <p style="font-size:.82rem;color:#555;margin:0 0 1rem">${t.words.length} ${T('label_words')||'Wörter'} &middot; My English Companion</p>
+      <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+        <thead><tr>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">#</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">English</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Deutsch</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Example</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.scrollTop = 0;
+}
+function closePrint(){
+  const o = document.getElementById('print-overlay'); if(o) o.remove();
 }
 
 // ===== Dictionary Skills page =====
