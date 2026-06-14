@@ -4466,6 +4466,47 @@ function printVocab(id){
 function closePrint(){
   const o = document.getElementById('print-overlay'); if(o) o.remove();
 }
+function printIrreg(){
+  if(typeof IRREG==='undefined') return;
+  const esc = s => (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const td = (c,extra)=>`<td style="border:1px solid #999;padding:4px 6px;${extra||''}">${c}</td>`;
+  const rows = IRREG.map((v,i)=>`<tr>
+    ${td(i+1,'text-align:right;color:#777;width:8mm')}
+    ${td(esc(v.inf),'font-weight:bold')}
+    ${td(esc(v.past))}
+    ${td(esc(v.pp))}
+    ${td(esc(v.de),'color:#444')}
+    ${td(esc(v.ex||''),'font-style:italic;color:#333')}
+  </tr>`).join('');
+  const title = 'Irregular Verbs';
+  const old = document.getElementById('print-overlay'); if(old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'print-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000;background:#fff;overflow:auto;-webkit-overflow-scrolling:touch';
+  ov.innerHTML = `
+    <div class="no-print" style="position:sticky;top:0;display:flex;gap:.5rem;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:#F8FAFC;border-bottom:1px solid #E2E8F0">
+      <button onclick="closePrint()" style="padding:.5rem .9rem;border-radius:.7rem;border:1.5px solid #E2E8F0;background:#fff;color:#334155;font-weight:600;font-size:.85rem;cursor:pointer">‹ ${T('vocab_print_back')||'Zurück'}</button>
+      <strong style="font-size:.88rem;color:#1E293B;text-align:center;flex:1">${title}</strong>
+      <button onclick="window.print()" style="padding:.5rem .9rem;border-radius:.7rem;border:none;background:#2563EB;color:#fff;font-weight:700;font-size:.85rem;cursor:pointer">🖨️ ${T('vocab_print')||'Drucken'}</button>
+    </div>
+    <div id="print-area" style="padding:1rem 1.25rem;max-width:800px;margin:0 auto;color:#111">
+      <h1 style="font-size:1.3rem;font-weight:800;margin:0 0 .2rem">${title}</h1>
+      <p style="font-size:.82rem;color:#555;margin:0 0 1rem">${IRREG.length} ${T('label_words')||'Wörter'} &middot; My English Companion</p>
+      <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+        <thead><tr>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">#</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Infinitive</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Simple Past</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Past Participle</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Deutsch</th>
+          <th style="border:1px solid #999;padding:4px 6px;background:#eee;text-align:left">Example</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.scrollTop = 0;
+}
 
 // ===== Dictionary Skills page =====
 function renderDictSkills(){
@@ -5158,7 +5199,8 @@ function renderIrregVerbs(mode){
     `<button onclick="startIrregMemory('irr2')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FFFBEB;color:#92400E">🃏 Memory (Inf↔Past)</button>`+
     `<button onclick="startIrregMemory('irr3')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FFFBEB;color:#92400E">🃏 Memory (Inf↔Past+PP)</button>`+
     `<button onclick="buildWordSearch('irreg');go('wordsearch','irreg')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#F0FDF4;color:#065F46">${T('irreg_mode_ws')}</button>`+
-    `<button onclick="startHangman('irreg');go('hangman','irreg')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FFF7ED;color:#92400E">🎯 Hangman</button>`;
+    `<button onclick="startHangman('irreg');go('hangman','irreg')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FFF7ED;color:#92400E">🎯 Hangman</button>`+
+    `<button onclick="printIrreg()" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#F1F5F9;color:#475569">🖨️ ${T('vocab_print')||'Drucken'}</button>`;
 
   let content = '';
   if(mode==='list') content = renderIrregList(known);
