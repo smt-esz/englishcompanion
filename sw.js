@@ -1,31 +1,23 @@
-// My English Companion – Service Worker v5
+// My English Companion – Service Worker
 // Strategy: network-first for the page (HTML) so a new version is loaded
 // as soon as the device is online; stale-while-revalidate for other assets;
 // cache fallback when offline.
-const CACHE = 'my-english-companion-v15';
+// Alle Assets liegen lokal (kein CDN mehr) – die App ist komplett offline-fähig.
+const CACHE = 'my-english-companion-v19';
 const CORE = [
   './',
   './index.html',
+  './tailwind.css',
+  './fonts/inter-latin.woff2',
+  './fonts/inter-latin-ext.woff2',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
   './apple-touch-icon.png'
 ];
-const CDN = [
-  'https://cdn.tailwindcss.com',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
-];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c =>
-      c.addAll(CORE).then(() =>
-        Promise.allSettled(CDN.map(url =>
-          fetch(url, {mode:'no-cors'}).then(res => c.put(url, res)).catch(()=>{})
-        ))
-      )
-    )
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)));
   self.skipWaiting();
 });
 

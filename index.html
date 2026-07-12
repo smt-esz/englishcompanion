@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="de">
 <head>
 <meta charset="UTF-8">
@@ -10,10 +10,30 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="My English Companion">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Tailwind & Schrift liegen lokal (kein CDN, keine Google-Server → DSGVO,
+     schneller Start, komplett offline-fähig).
+     tailwind.css neu erzeugen, falls neue Utility-Klassen dazukommen:
+     npx tailwindcss@3.4.17 -i in.css -o tailwind.css --content index.html --minify
+     (in.css: "@tailwind base; @tailwind components; @tailwind utilities;") -->
+<link rel="stylesheet" href="tailwind.css">
 <style>
-  body { font-family: "Inter", sans-serif; }
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  }
+  body { font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; }
   /* Accessibility: larger text (scale ROOT so all rem-based sizes grow) */
   html.big-text { font-size: 120%; }
   html.big-text body { font-size: 1rem; }
@@ -29,6 +49,10 @@
   body.easy-read { letter-spacing: .02em; word-spacing: .08em; line-height: 1.7; }
   body.easy-read p, body.easy-read li, body.easy-read span { line-height: 1.7; }
   .nav-link.active { background:#EFF6FF; color:#2563EB; }
+  /* Nav-Einträge sind Buttons (per Tastatur erreichbar) – Button-Optik zurücksetzen */
+  button.nav-link { background:none; border:none; font-family:inherit; width:100%; }
+  :focus-visible { outline:2px solid #3B82F6; outline-offset:2px; border-radius:.4rem; }
+  button:disabled { opacity:.45; cursor:not-allowed; }
   .card { background:#fff; border-radius:1rem; border:1px solid #f1f5f9; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,.06); }
   .btn-primary { background:#3B82F6; color:#fff; padding:.625rem 1.25rem; border-radius:.75rem; font-weight:600; font-size:.875rem; border:none; cursor:pointer; transition:background .15s; }
   .btn-primary:hover { background:#2563EB; }
@@ -58,21 +82,25 @@
   .badge-box { border-radius:1rem; padding:1rem; text-align:center; border:1px solid; }
   .badge-earned { background:#FFFBEB; border-color:#FCD34D; }
   .badge-locked { background:#F8FAFC; border-color:#E2E8F0; opacity:.5; filter:grayscale(1); }
-  /* Sidebar default: hidden on mobile */
-  #sidebar { display: none; }
-  #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:39; }
+  /* Sidebar default: hidden on mobile.
+     z-index 60: liegt über der Topbar (z-50), sonst verdeckt die Topbar
+     im mobilen Modus den Kopf der geöffneten Sidebar.
+     padding-top: Safe-Area für Geräte mit Notch/Statusleiste. */
+  #sidebar { display: none; z-index: 60; padding-top: env(safe-area-inset-top); }
+  #sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:55; }
+  #mobile-nav { display:none; }
   #topbar { display:flex; }
   @media(min-width:900px){
     #sidebar { display: flex; }
     #sidebar-overlay { display:none !important; }
     #topbar { display:none; }
     #mobile-nav { display:none !important; }
-    .main-content { margin-left:14rem !important; padding-top:0 !important; padding-bottom:2rem; }
+    .main-content { margin-left:14rem !important; padding-top:1.5rem !important; padding-bottom:2rem; }
   }
   @media(max-width:899px){
     #sidebar.open { display: flex; }
     #mobile-nav { display:flex; }
-    .main-content { margin-left:0 !important; padding-top:calc(3.25rem + env(safe-area-inset-top)) !important; padding-bottom:calc(5rem + env(safe-area-inset-bottom)); }
+    .main-content { margin-left:0 !important; padding-top:calc(4.25rem + env(safe-area-inset-top)) !important; padding-bottom:calc(5rem + env(safe-area-inset-bottom)); }
   }
   .section-page { display:none; }
   .section-page.active { display:block; }
@@ -83,7 +111,7 @@
 <!-- TOPBAR (mobile) -->
 <div id="topbar" style="position:fixed;top:0;left:0;right:0;min-height:3.25rem;height:calc(3.25rem + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);background:#fff;border-bottom:1px solid #F1F5F9;z-index:50;align-items:center;padding-left:1rem;padding-right:1rem;gap:.6rem">
   <button onclick="toggleSidebar()" style="background:none;border:none;cursor:pointer;font-size:1.4rem;padding:.25rem;line-height:1;color:#475569" aria-label="Menü">☰</button>
-  <img src="icon-192.png" alt="ec" style="width:1.6rem;height:1.6rem;border-radius:.4rem;object-fit:cover;flex-shrink:0"><span style="font-weight:700;color:#2563EB;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">English Companion</span>
+  <button onclick="go('home')" style="display:flex;align-items:center;gap:.6rem;background:none;border:none;cursor:pointer;padding:0;min-width:0" aria-label="Home"><img src="icon-192.png" alt="ec" style="width:1.6rem;height:1.6rem;border-radius:.4rem;object-fit:cover;flex-shrink:0"><span style="font-weight:700;color:#2563EB;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">English Companion</span></button>
 </div>
 <!-- SIDEBAR OVERLAY -->
 <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
@@ -91,27 +119,27 @@
 <aside id="sidebar" class="fixed top-0 left-0 h-full w-56 bg-white border-r border-slate-100 flex-col z-40">
   <div class="px-5 py-5 border-b border-slate-100">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="flex items-center gap-2 font-bold text-blue-600 text-base">
+      <button onclick="go('home');if(window.innerWidth<900)toggleSidebar()" class="flex items-center gap-2 font-bold text-blue-600 text-base" style="background:none;border:none;cursor:pointer;padding:0" aria-label="Home">
         <img src="icon-192.png" alt="ec" style="width:2rem;height:2rem;border-radius:.4rem;object-fit:cover;background:#F59E0B">
         <span style="font-size:.95rem">English Companion</span>
-      </div>
+      </button>
       <button onclick="toggleSidebar()" id="sidebar-close" style="background:none;border:none;cursor:pointer;font-size:1.3rem;color:#94A3B8;display:none;padding:.2rem" aria-label="Menü schließen">✕</button>
     </div>
   </div>
   <nav class="flex-1 overflow-y-auto py-3 px-3 space-y-1">
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('home')">🏠 <span data-i18n="nav_home">Home</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('grammar')">📚 <span data-i18n="nav_grammar">Grammar</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('vocabulary')">🔤 <span data-i18n="nav_vocab">Vocabulary</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('dict-skills')" style="padding-left:2.25rem;font-size:.82rem;color:#155E75;background:#ECFEFF;border-left:3px solid #06B6D4;border-radius:.5rem">📖 <span data-i18n="nav_dict">Dictionary Skills</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('irreg','list')" style="padding-left:2.25rem;font-size:.82rem;color:#92400E;background:#FFFBEB;border-left:3px solid #F59E0B;border-radius:.5rem">📋 <span data-i18n="nav_irreg">Irregular Verbs</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('reading-list')">📖 <span data-i18n="nav_reading">Reading</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('writing-list')">✏️ <span data-i18n="nav_writing">Writing</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('spiele')">🎮 <span data-i18n="nav_games">Games</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('practice')">⚡ <span data-i18n="nav_practice">Practice</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('lernweg')">📈 <span data-i18n="nav_progress">My Progress</span></a>
-    <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('help')">❓ <span data-i18n="nav_help">Help & Tips</span></a>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('home')">🏠 <span data-i18n="nav_home">Home</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('grammar')">📚 <span data-i18n="nav_grammar">Grammar</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('vocabulary')">🔤 <span data-i18n="nav_vocab">Vocabulary</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('dict-skills')" style="padding-left:2.25rem;font-size:.82rem;color:#155E75;background:#ECFEFF;border-left:3px solid #06B6D4;border-radius:.5rem">📖 <span data-i18n="nav_dict">Dictionary Skills</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('irreg','list')" style="padding-left:2.25rem;font-size:.82rem;color:#92400E;background:#FFFBEB;border-left:3px solid #F59E0B;border-radius:.5rem">📋 <span data-i18n="nav_irreg">Irregular Verbs</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('reading-list')">📖 <span data-i18n="nav_reading">Reading</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('writing-list')">✏️ <span data-i18n="nav_writing">Writing</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('spiele')">🎮 <span data-i18n="nav_games">Games</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('practice')">⚡ <span data-i18n="nav_practice">Practice</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('lernweg')">📈 <span data-i18n="nav_progress">My Progress</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('help')">❓ <span data-i18n="nav_help">Help & Tips</span></button>
     <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #F1F5F9">
-      <a class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('extern')">🔗 <span data-i18n="nav_extern">More Practice</span></a>
+      <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('extern')">🔗 <span data-i18n="nav_extern">More Practice</span></button>
     </div>
     <div style="margin-top:.75rem;padding:.6rem .75rem;background:#EFF6FF;border-radius:.75rem;border:1px solid #BFDBFE" id="pwa-install-box">
       <p style="font-size:.68rem;font-weight:700;color:#1D4ED8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.4rem">📲 App</p>
@@ -137,16 +165,19 @@
         <button onclick="toggleEasyRead()" id="a11y-btn-easy" style="text-align:left;padding:.3rem .5rem;border-radius:.4rem;font-size:.78rem;font-weight:600;border:none;cursor:pointer;background:transparent;color:#065F46"><span data-i18n="a11y_easy">Easier reading</span></button>
       </div>
     </div>
+  </nav>
 </aside>
 
 <!-- MOBILE NAV -->
-<nav id="mobile-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 justify-around py-1" style="display:none;padding-bottom:env(safe-area-inset-bottom)">
-  <a onclick="go('home')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">🏠</span><span data-i18n="nav_home">Home</span></a>
-  <a onclick="go('grammar')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📚</span><span data-i18n="nav_grammar">Grammar</span></a>
-  <a onclick="go('vocabulary')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">🔤</span><span data-i18n="nav_vocab">Vocabulary</span></a>
+<!-- display wird rein per CSS gesteuert (mobil: flex, Desktop: none) –
+     ein inline display:none würde die Media-Query immer überstimmen -->
+<nav id="mobile-nav" class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 z-40 justify-around py-1" style="padding-bottom:env(safe-area-inset-bottom)">
+  <button style="background:none;border:none;font-family:inherit" onclick="go('home')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">🏠</span><span data-i18n="nav_home">Home</span></button>
+  <button style="background:none;border:none;font-family:inherit" onclick="go('grammar')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📚</span><span data-i18n="nav_grammar">Grammar</span></button>
+  <button style="background:none;border:none;font-family:inherit" onclick="go('vocabulary')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">🔤</span><span data-i18n="nav_vocab">Vocabulary</span></button>
   
-  <a onclick="go('reading-list')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📖</span><span data-i18n="nav_reading">Reading</span></a>
-  <a onclick="go('lernweg')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📈</span><span data-i18n="nav_progress">My Progress</span></a>
+  <button style="background:none;border:none;font-family:inherit" onclick="go('reading-list')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📖</span><span data-i18n="nav_reading">Reading</span></button>
+  <button style="background:none;border:none;font-family:inherit" onclick="go('lernweg')" class="flex flex-col items-center gap-0.5 py-1 px-2 cursor-pointer text-slate-500 text-xs"><span style="font-size:1.2rem">📈</span><span data-i18n="nav_progress">My Progress</span></button>
 </nav>
 
 <!-- MAIN -->
@@ -167,8 +198,55 @@
 // Die SuS sehen die Version unten rechts und bekommen
 // beim ersten Öffnen der neuen Version ein Update-Pop-up.
 // ═══════════════════════════════════════════════
-const APP_VERSION = '1.1';
+const APP_VERSION = '2.0';
 const CHANGELOG = [
+  { v:'2.0', date:'2026', items:[
+    'Neu: Sprach-Check beim ersten Start – die App zeigt dir deine Übungs-Schwerpunkte und deine Entwicklung.',
+    'Neu: Vokabeln hören & tippen (Diktat) und Aussprache-Training mit dem Mikrofon.',
+    'Neue Avatare, die du mit deinem Level freischaltest, plus Level-Fahrplan und Wochenrückblick.',
+    'Grammatik-Farben verfeinert: do+n\'t wird getrennt gezeigt, Endungen sind jetzt gelb markiert.',
+    'Writing: Erst Checkliste abhaken, dann an die Lehrkraft senden.',
+  ]},
+  { v:'1.5', date:'2026', items:[
+    'Neu: Profil mit Name und Avatar – die App begrüßt dich persönlich.',
+    'Grammatik: einheitliche Farben (Subjekt blau · Verb grün · Hilfsverb orange · Verneinung rot · Fragewort lila · Endung pink).',
+    'Update-Fenster ist jetzt kürzer und scrollbar.',
+  ]},
+  { v:'1.4', date:'2026', items:[
+    'Neu: Wiederholen mit Lernplan – geübte Vokabeln kommen in Fächer (1–5) und werden nach 1/3/7/14/30 Tagen wieder fällig.',
+    'Die Zurück-Taste/-Geste führt jetzt zur vorherigen Seite statt die App zu schließen.',
+    'Die App lädt nichts mehr von fremden Servern (Datenschutz) und startet schneller – Schrift und Styles liegen jetzt in der App.',
+    'Streak zählt jetzt echte Übungstage, nicht nur das Öffnen der App.',
+    'Bestenliste zeigt jetzt die besten Ergebnisse (nicht die neuesten).',
+    'Mobile Ansicht: Menü wird oben nicht mehr von der Kopfleiste verdeckt.',
+    'Neue Erinnerung, den Lernfortschritt regelmäßig zu sichern.',
+    'Navigation ist jetzt per Tastatur bedienbar.',
+    'Pip-Baustein: "to slip (on sth.)" und "to slip away" werden jetzt unterschieden.',
+  ]},
+  { v:'1.3.1', date:'2026', items:[
+    'Quick-Fire: Timer stoppt jetzt korrekt, wenn du das Spiel verlässt.',
+    'Quick-Fire: Ergebnis wird nicht mehr doppelt in der Bestenliste gespeichert.',
+    'Vokabeln tippen: Antworten werden genauer geprüft (keine zufälligen Buchstabenfolgen mehr richtig).',
+    'Vokabel-Quiz: keine doppelten Antwortmöglichkeiten mehr.',
+    'Food & Drinks: doppelte Vokabeln (recipe, meat) entfernt.',
+  ]},
+  { v:'1.3', date:'2026', items:[
+    'Neues Level-System: Sammle XP und steige im Level auf.',
+    'Tagesziel mit Fortschrittsring auf der Startseite.',
+    'Deine Streak ist jetzt immer sichtbar.',
+    'Neue Abzeichen: 7- und 30-Tage-Streak, Spiele-Start, Spiele-Meister, 100 Wörter, Level 5.',
+    'Hinweis Neuer Rekord bei Memory und Quick-Fire.',
+  ]},
+  { v:'1.2', date:'2026', items:[
+    'Vokabeln: neue Filter SOUL 5 und SOUL 6.',
+    'Wörterbuch-Seite jetzt unten bei den Spielen statt ganz oben.',
+    'Writing: Haiku und Akrostichon in die Kreativ-Ecke verschoben, Fokus auf die Hauptaufgaben.',
+    'My Progress: Übersicht über gespielte Spiele.',
+    'Unregelmäßige Verben haben jetzt eine Druckfunktion.',
+    'Druckansicht öffnet in der App mit Zurück-Button (kein neues Fenster mehr).',
+    'Satzbauübungen: deutlicher Hinweis, wenn eine Frage gebildet werden soll.',
+    'Grammatik: doppeltes Emoji auf Deutsch behoben.',
+  ]},
   { v:'1.1', date:'2026', items:[
     'Alle SOUL-Bausteine als Vokabeln ergänzt (Klasse 5: Holidays, Party; Klasse 6: Maple Hill, Christmas, Peacemakers, Pip).',
     'Neuer A1-Grundwortschatz: häufige Verben, Adjektive, Zahlen, Farben, Tage/Monate/Zeit und kleine Wörter.',
@@ -657,8 +735,6 @@ const VOCAB = [
       {en:'to eat in / eat out',      de:'zu Hause / auswärts essen',    example:'Shall we eat in or eat out tonight?'},
       {en:'to try a dish',            de:'ein Gericht ausprobieren',      example:'You should try the local dish!'},
       {en:'serve food',            de:'Essen servieren',               example:'Dinner is served at seven.'},
-      {en:'recipe',     de:'das Rezept', example:'Read her recipe for hamburgers.'},
-      {en:'meat',       de:'das Fleisch', example:'Grill the meat in a pan.'},
       {en:'patty',      de:'die Frikadelle, der Bratling', example:'Put the patty on the bun.'},
       {en:'bun',        de:'das Brötchen', example:'Cut the bun in half.'},
       {en:'lettuce',    de:'der Salat (Blattsalat)', example:'Add cheese, lettuce and tomato.'},
@@ -1277,7 +1353,7 @@ const VOCAB = [
       {en:"guardian", de:"der/die Hüter/in, Wächter/in", example:"She became the guardian of the library."},
       {en:"to guzzle down", de:"gierig verschlingen", example:"The dog began to guzzle down its food."},
       {en:"handle", de:"der Griff", example:"Turn the handle to open the door."},
-      {en:"to hatch", de:"schlüpfen", example:"The eggs began to hatch."},
+      {en:"to hatch", de:"schlüpfen (aus dem Ei)", example:"The eggs began to hatch."},
       {en:"to headbutt", de:"einen Kopfstoß verpassen", example:"The goat tried to headbutt the gate."},
       {en:"to hitch up", de:"hochziehen", example:"He had to hitch up his trousers."},
       {en:"hoof", de:"der Huf (pl hooves)", example:"The horse hurt its hoof."},
@@ -1314,7 +1390,7 @@ const VOCAB = [
       {en:"pigeon hole", de:"das Postfach, Sortierfach", example:"The letter was in his pigeon hole."},
       {en:"platform", de:"der Bahnsteig", example:"The train leaves from platform four."},
       {en:"to point", de:"zeigen, deuten", example:"Don't point at people."},
-      {en:"pole", de:"der Stock", example:"The flag hung on a tall pole."},
+      {en:"pole", de:"die Stange, der Mast", example:"The flag hung on a tall pole."},
       {en:"precious", de:"kostbar", example:"The ring was very precious to her."},
       {en:"to press a button", de:"einen Knopf drücken", example:"Press a button to start the machine."},
       {en:"to pretend", de:"vortäuschen, so tun als ob", example:"Let's pretend we are pirates."},
@@ -1343,7 +1419,7 @@ const VOCAB = [
       {en:"to shuffle", de:"schlürfen, sich dahinschleppen", example:"The old man began to shuffle along the path."},
       {en:"to sigh", de:"seufzen", example:"She gave a long sigh."},
       {en:"skin", de:"die Haut", example:"The sun is bad for your skin."},
-      {en:"to slip", de:"schlüpfen", example:"Be careful, you might slip on the ice."},
+      {en:"to slip (on sth.)", de:"ausrutschen (auf etw.)", example:"Be careful, you might slip on the ice."},
       {en:"sloppy", de:"triefend, schlabberig", example:"The dog gave a sloppy lick."},
       {en:"slug", de:"die Nacktschnecke", example:"A slug crawled across the leaf."},
       {en:"to snap", de:"schnappen; jemanden anschnauzen", example:"Don't snap at your sister."},
@@ -1356,7 +1432,7 @@ const VOCAB = [
       {en:"stealth", de:"versteckt", example:"They moved with stealth through the dark."},
       {en:"step", de:"der Schritt; treten, gehen", example:"Watch your step on the stairs."},
       {en:"to stick out", de:"hervorstehen (stuck, stuck)", example:"Don't stick out your tongue."},
-      {en:"stick", de:"der Stock", example:"The dog ran after the stick."},
+      {en:"stick", de:"der Stock (vom Baum)", example:"The dog ran after the stick."},
       {en:"to store", de:"lagern", example:"We store the apples in the cellar."},
       {en:"storeroom", de:"der Lagerraum", example:"The boxes are in the storeroom."},
       {en:"straight", de:"gerade; geradeaus", example:"Go straight on to the bridge."},
@@ -1395,7 +1471,8 @@ const VOCAB = [
       {en:"to wonder", de:"sich fragen, sich wundern", example:"I wonder what is behind the door."},
       {en:"wood", de:"das Holz", example:"The box is made of wood."},
       {en:"wooden", de:"aus Holz", example:"They lived in a small wooden house."},
-      {en:"wrinkled", de:"faltig, runzlig", example:"The old man had a wrinkled face."}
+      {en:"wrinkled", de:"faltig, runzlig", example:"The old man had a wrinkled face."},
+      {en:"to slip away", de:"sich davonschleichen, entwischen", example:"Pip slipped away before anyone could see her."}
     ]
   },
   { id:'verbs', title:'Common Verbs', emoji:'🏃', level:'A1', cls:0, cat:'basics',
@@ -1935,8 +2012,14 @@ const BADGES = [
   {id:'writing-explorer',emoji:'✏️',title:'Writing Explorer',descDE:'Erste Writing-Aufgabe eingereicht',descEN:'Submitted your first writing task'},
   {id:'irreg-champ',emoji:'🏆',title:'Irregular Verb Champion',descDE:'20 unregelmäßige Verben gelernt',descEN:'Learnt 20 irregular verbs'},
   {id:'simple-past-master',emoji:'🌟',title:'Simple Past Master',descDE:'Simple Past abgeschlossen',descEN:'Completed the Simple Past'},
-  {id:'streak-3',emoji:'🔥',title:'3-Tage-Streak',descDE:'3 Tage hintereinander geübt',descEN:'Practised 3 days in a row'},
-  {id:'all-rounder',emoji:'🌈',title:'All-Rounder',descDE:'In allen Bereichen mindestens eine Aufgabe',descEN:'At least one task in every area'}
+  {id:'streak-3',emoji:'🔥',title:'3-Tage-Streak',titleEN:'3-Day Streak',descDE:'3 Tage hintereinander geübt',descEN:'Practised 3 days in a row'},
+  {id:'all-rounder',emoji:'🌈',title:'All-Rounder',descDE:'In allen Bereichen mindestens eine Aufgabe',descEN:'At least one task in every area'},
+  {id:'streak-7',emoji:'🔥',title:'7-Tage-Streak',titleEN:'7-Day Streak',descDE:'7 Tage hintereinander geübt',descEN:'Practised 7 days in a row'},
+  {id:'streak-30',emoji:'🏅',title:'30-Tage-Streak',titleEN:'30-Day Streak',descDE:'30 Tage hintereinander geübt',descEN:'Practised 30 days in a row'},
+  {id:'first-game',emoji:'🎮',title:'Spiele-Start',titleEN:'Game Starter',descDE:'Erstes Spiel gespielt',descEN:'Played your first game'},
+  {id:'game-master',emoji:'🕹️',title:'Spiele-Meister',titleEN:'Game Master',descDE:'10 Spiele gespielt',descEN:'Played 10 games'},
+  {id:'word-collector',emoji:'📚',title:'Wörter-Sammler',titleEN:'Word Collector',descDE:'100 Vokabeln gelernt',descEN:'Learnt 100 words'},
+  {id:'level-5',emoji:'🚀',title:'Level 5',descDE:'Level 5 erreicht',descEN:'Reached level 5'}
 ];
 
 // ═══════════════════════════════════════════════
@@ -1947,32 +2030,61 @@ let P = (() => {
   try { return JSON.parse(localStorage.getItem(SK)) || defP(); } catch(e){ return defP(); }
 })();
 function defP(){
-  return {grammar:{}, vocab:{}, irreg:[], reading:[], writing:[], listening:[], badges:[], streak:0, lastDate:'', xp:0, errors:{}, gHistory:{}, readingScores:{}, weekChallenge:{week:0,done:[]}, gameStats:{hangman:[], memory:[], qf:[], wordsearch:[]}, lang:'en2', teacherEmail:'', seenVersion:'', bigText:false, easyRead:false};
+  return {grammar:{}, vocab:{}, irreg:[], reading:[], writing:[], listening:[], badges:[], streak:0, lastDate:'', xp:0, errors:{}, gHistory:{}, readingScores:{}, weekChallenge:{week:0,done:[]}, gameStats:{hangman:[], memory:[], qf:[], wordsearch:[]}, dayXP:0, dayXPDate:'', lang:'en2', teacherEmail:'', seenVersion:'', bigText:false, easyRead:false, name:'', avatar:'', srs:{}};
 }
 function save(){ localStorage.setItem(SK, JSON.stringify(P)); }
 
 // ── LANGUAGE / i18n ─────────────────────────────────────────────
 const i18n = {
   de: {
+    home_today_zone:'Heute für dich', home_explore_zone:'Entdecken & Üben',
+    home_focus_title:'Deine Schwerpunkte', home_focus_sub:'Diese Themen haben im Sprach-Check noch gehakt – hier lohnt sich das Üben am meisten:',
+    profile_avatar_locked_pre:'Freigeschaltet ab Level ', profile_avatar_unlock_hint:'🔒 Weitere Avatare schaltest du mit steigendem Level frei.',
+    ob_welcome_title:'Willkommen beim English Companion!', ob_welcome_sub:'Bevor es losgeht: Sag uns, wer du bist.',
+    ob_name_required:'Bitte gib deinen Namen ein (mindestens 2 Buchstaben).',
+    ob_cls_title:'In welcher Klasse bist du?', ob_cls_sub:'Damit zeigen wir dir die passenden Inhalte zuerst.',
+    ob_check_title:'Sprach-Check', ob_check_sub:'Kurzer Check: ein paar Fragen quer durch die Grammatik. Es ist kein Test – er zeigt dir nur, wo du stehst!',
+    ob_result_title:'Dein Ergebnis', ob_focus_label:'Deine Übungs-Schwerpunkte:', ob_allgood:'Stark! Du hast überall eine gute Grundlage.',
+    ob_start_btn:'Los geht es! 🚀', ob_check_repeat:'Check wiederholen', ob_check_do:'Check starten', ob_check_none:'Mach den Sprach-Check und finde heraus, wo du stehst.',
+    ob_last_check:'Letzter Check:', ob_prev_check:'davor:', ob_history_label:'Verlauf:',
+    week_review_title:'📅 Deine Woche', week_review_days:'Tage geübt',
+    roadmap_title:'Level-Fahrplan', roadmap_sub:'Noch {xp} XP bis Level {next}. Das kannst du freischalten:', roadmap_badge_lvl5:'Abzeichen Level 5',
+    vocab_tab_listen:'🎧 Hören', vocab_tab_speak:'🎤 Sprechen',
+    listen_prompt:'Hör dir das Wort an und tippe es auf Englisch.', listen_play:'Anhören', listen_ph:'Was hast du gehört?',
+    speak_not_supported:'Das Aussprache-Training funktioniert nur in Chrome oder Edge mit Mikrofon.',
+    speak_prompt:'Hör dir das Wort an und sprich es nach.', speak_listening:'Ich höre zu … sprich jetzt!', speak_tap_mic:'Tippe auf das Mikrofon und sprich das Wort.',
+    speak_great:'✅ Super ausgesprochen!', speak_heard:'Ich habe verstanden:', speak_try_again:'Versuch es noch einmal!', speak_mic_denied:'Bitte erlaube den Mikrofon-Zugriff.',
+    writing_checklist_gate:'Hake zuerst alle Punkte der Checkliste ab – danach kannst du deinen Text an die Lehrkraft senden.',
+    home_title_name:'Hallo {name}, schön dass du da bist! 👋',
+    profile_title:'Dein Profil', profile_name_label:'Wie heißt du?', profile_name_ph:'Dein Name',
+    profile_avatar_label:'Such dir einen Avatar aus', profile_save:'Speichern', profile_edit:'Profil bearbeiten',
+    profile_setup_title:'Mach die App zu deiner!', profile_setup_sub:'Gib deinen Namen ein und such dir einen Avatar aus.', profile_setup_btn:'Los geht\'s',
+    version_older:'Ältere Versionen anzeigen',
+    review_title:'🔁 Wiederholen', review_due_words:'Wörter sind heute fällig', review_start:'Jetzt wiederholen',
+    review_none:'Keine Wörter fällig – super!', review_none_sub:'Übe Vokabeln im Quiz oder Tipp-Modus, dann landen sie in deinem Wiederholungsplan.',
+    review_done_sub:'Richtig beantwortete Wörter kommen ein Fach höher und werden später wieder fällig.',
+    review_more:'Weiter wiederholen', review_box:'Fach', review_box_up:'→ ein Fach höher!', review_box_down:'Das Wort kommt zurück in Fach 1 – du siehst es morgen wieder.',
+    backup_nudge_title:'Sichere deinen Fortschritt', backup_nudge_sub:'Lade ab und zu eine Sicherungsdatei herunter – falls dein Gerät den Speicher leert.',
+    backup_nudge_btn:'Jetzt sichern', backup_nudge_later:'Später',
     nav_home:'Startseite', nav_grammar:'Grammatik', nav_vocab:'Vokabeln',
     nav_irreg:'Unregelmäßige Verben', nav_reading:'Lesen', nav_writing:'Schreiben',
     nav_games:'Spiele', nav_practice:'Üben', nav_progress:'Mein Lernweg',
     nav_help:'Hilfe & Tipps', nav_extern:'Weitere Übungen',
     home_title:'Hallo und herzlich willkommen bei deinem English Companion! 👋',
     home_sub:'Hier übst du Vokabeln, Grammatik und Aussprache – passend zu Klasse 5 und 6. Probiere die Reading- und Writing-Aufgaben aus und verfolge deinen Fortschritt.',
-    home_streak:'Tage', home_today:'Heute empfohlen',
+    home_streak:'Tage', home_level:'Level', home_to_next:'bis Level', home_daily_goal:'Tagesziel', home_today_label:'heute', home_goal_done:'Geschafft! 🎉', record_new:'Neuer Rekord!', home_today:'Heute empfohlen',
     home_progress:'📈 Mein Fortschritt', home_progress_btn:'Zum Lernweg →',
     home_challenge:'⭐ Wochenchallenge', home_challenge_done:'Wochenchallenge abgeschlossen!',
     home_timer:'⏱️ Wie lange willst du heute üben?',
     home_timer_sub:'Wähle eine Zeit – du bekommst ein gemischtes Aufgabenpaket aus Grammatik, Vokabeln und Lesen.',
     home_timer_min:'Min.',
     vocab_title:'🔤 Vokabeln', vocab_intro:'<strong>Grundwortschatz</strong> sind die wichtigsten Wörter zu jedem Thema, sortiert nach Klasse 5 und 6. <strong>Bausteine</strong> enthalten zusätzliche Wörter aus den SOUL-Bausteinen, die nicht schon im Grundwortschatz stehen. Nutze die Filter, um auszuwählen.', vocab_sub:'Lerne neue Wörter mit Karteikarten und Quiz', nav_dict:'Wörterbucharbeit', dict_title:'Wörterbucharbeit', dict_page_sub:'So nutzt du ein Wörterbuch richtig.', dict_sub:'So findest du Wörter im Wörterbuch.', dict_to_vocab:'Zu den Vokabeln', vsearch_ph:'Wort suchen (Englisch oder Deutsch)…', vsearch_hits:'Treffer', vsearch_none:'Keine Treffer.', vocab_print:'Drucken', vocab_print_back:'Zurück', vocab_print_blocked:'Bitte erlaube Pop-ups, um die Liste zu drucken.',
-    vocab_filter:'Filter', vocab_all:'Alle', vocab_k5:'Klasse 5', vocab_k6:'Klasse 6', vocab_basics:'Grundwortschatz',
+    vocab_filter:'Filter', vocab_all:'Alle', vocab_k5:'Klasse 5', vocab_k6:'Klasse 6', vocab_basics:'Grundwortschatz', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
     grammar_title:'📚 Grammatik', grammar_sub:'Erkläre, übe und teste dein Wissen',
     grammar_rules_de:'🇩🇪 Deutsch', grammar_rules_en:'🇬🇧 English',
     grammar_examples:'Beispiele', grammar_mistakes:'Häufige Fehler',
     grammar_exercises:'Übungen', grammar_level:'Level',
-    wo_prompt:'Bilde den richtigen Satz.', wo_question:'❓ Bilde die richtige Frage.',
+    wo_prompt:'Bilde den richtigen Satz.', wo_question:'❓ Bilde die richtige Frage.', wo_question_hint:'❓ Hier sollst du eine Frage bilden. Achte auf die Wortstellung und das Fragezeichen am Ende.',
     wo_check:'Prüfen ✓', wo_reset:'Zurücksetzen', wo_hint:'Tipp anzeigen',
     feedback_ok:'✅ Richtig!', feedback_almost:'✅ Fast richtig! Schreibweise:', feedback_wrong:'✗ Falsch. Richtig:',
     reading_title:'📖 Lesen', writing_title:'✏️ Schreiben',
@@ -2014,7 +2126,7 @@ const i18n = {
     grammar_ex_fallback:'Grammatik-Übung',
     type_fg:'Lückentext', type_wo:'Satzbausteine',
     legend_subject:'Subjekt', legend_verb:'Verb', legend_aux:'Hilfsverb',
-    legend_neg:'Verneinung', legend_wh:'Fragewort', legend_ending:'Endung (-ed/-ing)',
+    legend_neg:'Verneinung', legend_wh:'Fragewort', legend_ending:'Endung (-s/-ed/-ing)', legend_time:'Zeit-/Signalwörter', legend_object:'Objekt',
     irreg_mode_list:'📋 Liste', irreg_mode_cards:'🃏 Karten', irreg_mode_quiz:'🧪 Quiz',
     irreg_mode_write:'✏️ Schreiben', irreg_mode_ws:'🔍 Wortsuche',
     irreg_patterns_title:'🧠 Lernmuster & Tricks', irreg_learned:'gelernt',
@@ -2082,7 +2194,7 @@ const i18n = {
     writing_haiku_sub:'Gedicht mit 5-7-5 Silben · Thema per Zufall',
     writing_acrostic_create:'Akrostichon',
     writing_acrostic_sub:'Gedicht mit Anfangsbuchstaben · Zufallswort',
-    writing_tasks_heading:'📝 Aufgaben',
+    writing_tasks_heading:'📝 Aufgaben', writing_creative_heading:'🎨 Kreativ-Ecke', writing_creative_sub:'Zum Ausprobieren, wenn du Lust hast.',
     writing_done_label:'✓ Fertig',
     writing_text_types_heading:'📚 Texttypen-Übersicht',
     writing_text_types_sub:'Klick auf einen Texttyp, um Aufbau und Tipps zu sehen.',
@@ -2188,7 +2300,7 @@ const i18n = {
     lernweg_sub:'Hier siehst du, was du schon gelernt hast.',
     lernweg_vocab_by_cat:'🔤 Vokabeln nach Kategorie',
     lernweg_soul5:'SOUL Klasse 5', lernweg_soul6:'SOUL Klasse 6', lernweg_basics:'Grundwortschatz',
-    lernweg_my_badges:'Meine Badges',
+    lernweg_my_badges:'Meine Badges', lernweg_games_heading:'🎮 Gespielte Spiele', lernweg_games_none:'Noch keine Spiele gespielt. Probiere die Spiele aus!', lernweg_games_won:'gewonnen', lernweg_games_best:'best', lernweg_games_moves:'Züge',
     lernweg_grammar_progress:'Grammatik-Fortschritt',
     lernweg_vocab_progress:'Vokabel-Fortschritt',
     lernweg_trainer:'Trainer →',
@@ -2258,7 +2370,7 @@ const i18n = {
     pwa_offline_note:'Nach der Installation kannst du den English Companion wie eine echte App starten – auch ohne Internet!',
     grammar_formula_col_type:'Typ', grammar_formula_col_verb:'Verb / Rest', grammar_formula_col_obj:'Objekt / Ende',
     grammar_list_wortarten_sub:'Nomen, Verben, Adjektive, Adverbien, Präpositionen & mehr',
-    grammar_tab_observe:'👀 Beobachten', grammar_tab_rule:'💡 Regel', grammar_tab_practise:'✏️ Üben',
+    grammar_tab_observe:'Beobachten', grammar_tab_rule:'Regel', grammar_tab_practise:'Üben',
     grammar_auto_change:'Übungen werden automatisch gewechselt.',
     grammar_challenge_section:'Herausforderung',
     grammar_examples_heading:'Beispiele:',
@@ -2280,25 +2392,54 @@ const i18n = {
     ex_next:'Weiter →', vocab_result_label:'Ergebnis',
   },
   en1: {
+    home_today_zone:'For you today', home_explore_zone:'Explore & practise',
+    home_focus_title:'Your focus topics', home_focus_sub:'These topics were hard in your language check. Practise them first:',
+    profile_avatar_locked_pre:'Unlocks at level ', profile_avatar_unlock_hint:'🔒 You unlock more avatars as your level goes up.',
+    ob_welcome_title:'Welcome to English Companion!', ob_welcome_sub:'Before we start: tell us who you are.',
+    ob_name_required:'Please type your name (at least 2 letters).',
+    ob_cls_title:'Which class are you in?', ob_cls_sub:'We will show you the right content first.',
+    ob_check_title:'Language check', ob_check_sub:'A short check: some questions about grammar. It is not a test – it just shows you where you are!',
+    ob_result_title:'Your result', ob_focus_label:'Your practice focus:', ob_allgood:'Great! You have a good base everywhere.',
+    ob_start_btn:'Start now! 🚀', ob_check_repeat:'Repeat check', ob_check_do:'Start check', ob_check_none:'Do the language check and find out where you are.',
+    ob_last_check:'Last check:', ob_prev_check:'before:', ob_history_label:'History:',
+    week_review_title:'📅 Your week', week_review_days:'days practised',
+    roadmap_title:'Level roadmap', roadmap_sub:'{xp} XP to level {next}. You can unlock:', roadmap_badge_lvl5:'Badge Level 5',
+    vocab_tab_listen:'🎧 Listen', vocab_tab_speak:'🎤 Speak',
+    listen_prompt:'Listen to the word and type it in English.', listen_play:'Play', listen_ph:'What did you hear?',
+    speak_not_supported:'Speaking practice only works in Chrome or Edge with a microphone.',
+    speak_prompt:'Listen to the word and say it.', speak_listening:'I am listening … speak now!', speak_tap_mic:'Tap the microphone and say the word.',
+    speak_great:'✅ Great speaking!', speak_heard:'I heard:', speak_try_again:'Try again!', speak_mic_denied:'Please allow the microphone.',
+    writing_checklist_gate:'First tick all points on the checklist. Then you can send your text to your teacher.',
+    home_title_name:'Hi {name}, good to see you! 👋',
+    profile_title:'Your profile', profile_name_label:'What is your name?', profile_name_ph:'Your name',
+    profile_avatar_label:'Pick an avatar', profile_save:'Save', profile_edit:'Edit profile',
+    profile_setup_title:'Make the app yours!', profile_setup_sub:'Type your name and pick an avatar.', profile_setup_btn:'Start',
+    version_older:'Show older versions',
+    review_title:'🔁 Review', review_due_words:'words to review today', review_start:'Review now',
+    review_none:'No words to review – great!', review_none_sub:'Practise words in the quiz or typing mode. Then they go into your review plan.',
+    review_done_sub:'Correct words go up one box. You will see them again later.',
+    review_more:'Review more', review_box:'Box', review_box_up:'→ up one box!', review_box_down:'The word goes back to box 1 – you will see it again tomorrow.',
+    backup_nudge_title:'Save your progress', backup_nudge_sub:'Download a backup file sometimes – in case your device deletes the app data.',
+    backup_nudge_btn:'Save now', backup_nudge_later:'Later',
     nav_home:'Home', nav_grammar:'Grammar', nav_vocab:'Vocabulary',
     nav_irreg:'Irregular Verbs', nav_reading:'Reading', nav_writing:'Writing',
     nav_games:'Games', nav_practice:'Practise', nav_progress:'My Progress',
     nav_help:'Help & Tips', nav_extern:'More Practice',
     home_title:'Hello! Welcome to your English Companion! 👋',
     home_sub:'Here you can learn words, practise grammar and read texts. Try the games – and have fun!',
-    home_streak:'Days', home_today:'Try these today',
+    home_streak:'Days', home_level:'Level', home_to_next:'to level', home_daily_goal:'Daily goal', home_today_label:'today', home_goal_done:'Done! 🎉', record_new:'New record!', home_today:'Try these today',
     home_progress:'📈 My Progress', home_progress_btn:'See all progress →',
     home_challenge:'⭐ Weekly Challenge', home_challenge_done:'Weekly challenge done! Great job!',
     home_timer:'⏱️ How long do you want to practise today?',
     home_timer_sub:'Pick a time and get a fun mix of grammar, vocabulary and reading!',
     home_timer_min:'min.',
     vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Learn new words with flashcards and quizzes!', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
-    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Basic Words',
+    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Basic Words', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
     grammar_title:'📚 Grammar', grammar_sub:'Learn the rules and practise!',
     grammar_rules_de:'🇩🇪 Auf Deutsch', grammar_rules_en:'🇬🇧 In English',
     grammar_examples:'Examples', grammar_mistakes:'Common Mistakes',
     grammar_exercises:'Exercises', grammar_level:'Level',
-    wo_prompt:'Put the words in the right order!', wo_question:'❓ Put the words in the right order to make a question!',
+    wo_prompt:'Put the words in the right order!', wo_question:'❓ Put the words in the right order to make a question!', wo_question_hint:'❓ This should be a question. Mind the word order and the question mark at the end.',
     wo_check:'Check ✓', wo_reset:'Start again', wo_hint:'Show hint',
     feedback_ok:'✅ Correct! Well done!', feedback_almost:'✅ Almost! Correct spelling:', feedback_wrong:'✗ Not quite. The answer is:',
     reading_title:'📖 Reading', writing_title:'✏️ Writing',
@@ -2340,7 +2481,7 @@ const i18n = {
     grammar_ex_fallback:'Grammar exercise',
     type_fg:'Gap fill', type_wo:'Sentence building',
     legend_subject:'Subject', legend_verb:'Verb', legend_aux:'Auxiliary',
-    legend_neg:'Negative', legend_wh:'Question word', legend_ending:'Ending (-ed/-ing)',
+    legend_neg:'Negative', legend_wh:'Question word', legend_ending:'Ending (-s/-ed/-ing)', legend_time:'Time & signal words', legend_object:'Object',
     irreg_mode_list:'📋 List', irreg_mode_cards:'🃏 Cards', irreg_mode_quiz:'🧪 Quiz',
     irreg_mode_write:'✏️ Write', irreg_mode_ws:'🔍 Word Search',
     irreg_patterns_title:'🧠 Patterns & Tips', irreg_learned:'learnt',
@@ -2408,7 +2549,7 @@ const i18n = {
     writing_haiku_sub:'5-7-5 syllable poem · random topic',
     writing_acrostic_create:'Acrostic Poem',
     writing_acrostic_sub:'First-letter poem · random word',
-    writing_tasks_heading:'📝 Tasks',
+    writing_tasks_heading:'📝 Tasks', writing_creative_heading:'🎨 Creative corner', writing_creative_sub:'Just for fun, whenever you like.',
     writing_done_label:'✓ Done',
     writing_text_types_heading:'📚 Text Types',
     writing_text_types_sub:'Click on a text type to see structure and tips.',
@@ -2514,7 +2655,7 @@ const i18n = {
     lernweg_sub:'Here you can see what you have already learnt.',
     lernweg_vocab_by_cat:'🔤 Vocabulary by category',
     lernweg_soul5:'SOUL Year 5', lernweg_soul6:'SOUL Year 6', lernweg_basics:'Core vocabulary',
-    lernweg_my_badges:'My Badges',
+    lernweg_my_badges:'My Badges', lernweg_games_heading:'🎮 Games played', lernweg_games_none:'No games played yet. Try the games!', lernweg_games_won:'won', lernweg_games_best:'best', lernweg_games_moves:'moves',
     lernweg_grammar_progress:'Grammar Progress',
     lernweg_vocab_progress:'Vocabulary Progress',
     lernweg_trainer:'Trainer →',
@@ -2589,25 +2730,54 @@ const i18n = {
     pwa_offline_note:'After installing, you can open English Companion like a real app – even without internet!'
   },
   en2: {
+    home_today_zone:'For you today', home_explore_zone:'Explore & practise',
+    home_focus_title:'Your focus topics', home_focus_sub:'These topics were tricky in your language check - practising them will pay off most:',
+    profile_avatar_locked_pre:'Unlocks at level ', profile_avatar_unlock_hint:'🔒 More avatars unlock as your level rises.',
+    ob_welcome_title:'Welcome to English Companion!', ob_welcome_sub:'Before we begin: tell us who you are.',
+    ob_name_required:'Please enter your name (at least 2 letters).',
+    ob_cls_title:'Which class are you in?', ob_cls_sub:'We use this to show you the right content first.',
+    ob_check_title:'Language check', ob_check_sub:'A quick check with questions across all grammar topics. It is not a test - it simply shows where you stand!',
+    ob_result_title:'Your result', ob_focus_label:'Your practice focus:', ob_allgood:'Excellent! You have a solid base in every area.',
+    ob_start_btn:'Get started! 🚀', ob_check_repeat:'Repeat check', ob_check_do:'Start check', ob_check_none:'Take the language check to find out where you stand.',
+    ob_last_check:'Last check:', ob_prev_check:'previous:', ob_history_label:'History:',
+    week_review_title:'📅 Your week', week_review_days:'days practised',
+    roadmap_title:'Level roadmap', roadmap_sub:'{xp} XP to reach level {next}. Coming up:', roadmap_badge_lvl5:'Level 5 badge',
+    vocab_tab_listen:'🎧 Listening', vocab_tab_speak:'🎤 Speaking',
+    listen_prompt:'Listen to the word and type it in English.', listen_play:'Play', listen_ph:'What did you hear?',
+    speak_not_supported:'Pronunciation practice requires Chrome or Edge and a microphone.',
+    speak_prompt:'Listen to the word, then say it out loud.', speak_listening:'Listening … speak now!', speak_tap_mic:'Tap the microphone and say the word.',
+    speak_great:'✅ Well pronounced!', speak_heard:'I understood:', speak_try_again:'Give it another try!', speak_mic_denied:'Please allow microphone access.',
+    writing_checklist_gate:'Tick off every item on the checklist first - then you can send your text to your teacher.',
+    home_title_name:'Welcome back, {name}! 👋',
+    profile_title:'Your profile', profile_name_label:'What\'s your name?', profile_name_ph:'Your name',
+    profile_avatar_label:'Choose your avatar', profile_save:'Save', profile_edit:'Edit profile',
+    profile_setup_title:'Make the app your own!', profile_setup_sub:'Enter your name and choose an avatar.', profile_setup_btn:'Get started',
+    version_older:'Show older versions',
+    review_title:'🔁 Review', review_due_words:'words due for review today', review_start:'Review now',
+    review_none:'No words due – well done!', review_none_sub:'Practise vocabulary in quiz or typing mode and the words will enter your review schedule.',
+    review_done_sub:'Words you answered correctly move up a box and come back later.',
+    review_more:'Keep reviewing', review_box:'Box', review_box_up:'→ up one box!', review_box_down:'This word returns to box 1 – it will come up again tomorrow.',
+    backup_nudge_title:'Back up your progress', backup_nudge_sub:'Download a backup file from time to time – in case your device clears its storage.',
+    backup_nudge_btn:'Back up now', backup_nudge_later:'Later',
     nav_home:'Home', nav_grammar:'Grammar', nav_vocab:'Vocabulary',
     nav_irreg:'Irregular Verbs', nav_reading:'Reading', nav_writing:'Writing',
     nav_games:'Games', nav_practice:'Practise', nav_progress:'My Progress',
     nav_help:'Help & Tips', nav_extern:'Extra Practice',
     home_title:'Welcome to your English Companion! 👋',
     home_sub:'Practise vocabulary, grammar, reading and writing – all tailored to Year 5 and 6. Track your progress on the learning path.',
-    home_streak:'Day streak', home_today:'Recommended for today',
+    home_streak:'Day streak', home_level:'Level', home_to_next:'to level', home_daily_goal:'Daily goal', home_today_label:'today', home_goal_done:'Done! 🎉', record_new:'New record!', home_today:'Recommended for today',
     home_progress:'📈 My Progress', home_progress_btn:'See all progress →',
     home_challenge:'⭐ Weekly Challenge', home_challenge_done:'Weekly challenge complete! Excellent work.',
     home_timer:'⏱️ How long would you like to practise today?',
     home_timer_sub:'Select a duration and receive a mixed set of grammar, vocabulary and reading exercises.',
     home_timer_min:'min.',
     vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Build your word bank with flashcards, quizzes and writing tasks.', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
-    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Core Vocabulary',
+    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Core Vocabulary', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
     grammar_title:'📚 Grammar', grammar_sub:'Explanations, exercises and quizzes.',
     grammar_rules_de:'🇩🇪 In German', grammar_rules_en:'🇬🇧 In English',
     grammar_examples:'Examples', grammar_mistakes:'Common Mistakes',
     grammar_exercises:'Exercises', grammar_level:'Level',
-    wo_prompt:'Arrange the words to form a correct sentence.', wo_question:'❓ Arrange the words to form a correct question.',
+    wo_prompt:'Arrange the words to form a correct sentence.', wo_question:'❓ Arrange the words to form a correct question.', wo_question_hint:'❓ This should be a question. Mind the word order and the question mark at the end.',
     wo_check:'Check ✓', wo_reset:'Reset', wo_hint:'Show hint',
     feedback_ok:'✅ Correct!', feedback_almost:'✅ Almost! Correct spelling:', feedback_wrong:'✗ Incorrect. The correct answer is:',
     reading_title:'📖 Reading', writing_title:'✏️ Writing',
@@ -2649,7 +2819,7 @@ const i18n = {
     grammar_ex_fallback:'Grammar exercise',
     type_fg:'Gap fill', type_wo:'Sentence building',
     legend_subject:'Subject', legend_verb:'Verb', legend_aux:'Auxiliary',
-    legend_neg:'Negative', legend_wh:'Question word', legend_ending:'Ending (-ed/-ing)',
+    legend_neg:'Negative', legend_wh:'Question word', legend_ending:'Ending (-s/-ed/-ing)', legend_time:'Time & signal words', legend_object:'Object',
     irreg_mode_list:'📋 List', irreg_mode_cards:'🃏 Cards', irreg_mode_quiz:'🧪 Quiz',
     irreg_mode_write:'✏️ Write', irreg_mode_ws:'🔍 Word Search',
     irreg_patterns_title:'🧠 Patterns & Tips', irreg_learned:'learnt',
@@ -2717,7 +2887,7 @@ const i18n = {
     writing_haiku_sub:'5-7-5 syllable poem · random topic',
     writing_acrostic_create:'Acrostic Poem',
     writing_acrostic_sub:'First-letter poem · random word',
-    writing_tasks_heading:'📝 Tasks',
+    writing_tasks_heading:'📝 Tasks', writing_creative_heading:'🎨 Creative corner', writing_creative_sub:'Just for fun, whenever you like.',
     writing_done_label:'✓ Done',
     writing_text_types_heading:'📚 Text Types',
     writing_text_types_sub:'Click on a text type to see structure and tips.',
@@ -2823,7 +2993,7 @@ const i18n = {
     lernweg_sub:'Here you can see what you have already learnt.',
     lernweg_vocab_by_cat:'🔤 Vocabulary by category',
     lernweg_soul5:'SOUL Year 5', lernweg_soul6:'SOUL Year 6', lernweg_basics:'Core vocabulary',
-    lernweg_my_badges:'My Badges',
+    lernweg_my_badges:'My Badges', lernweg_games_heading:'🎮 Games played', lernweg_games_none:'No games played yet. Try the games!', lernweg_games_won:'won', lernweg_games_best:'best', lernweg_games_moves:'moves',
     lernweg_grammar_progress:'Grammar Progress',
     lernweg_vocab_progress:'Vocabulary Progress',
     lernweg_trainer:'Trainer →',
@@ -2947,15 +3117,60 @@ function wcToggle(idx){
   save();
   document.getElementById('app').innerHTML = render(_state);
 }
-function checkStreak(){
+// Streak zählt Übungs-Tage: Er wächst nur an Tagen, an denen XP verdient
+// wurden (nicht durch bloßes Öffnen der App). Aufruf über addXP().
+function bumpStreak(){
   const today = new Date().toISOString().slice(0,10);
   if(P.lastDate === today) return;
   const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
-  P.streak = P.lastDate === yest ? P.streak + 1 : 1;
+  P.streak = P.lastDate === yest ? (P.streak||0) + 1 : 1;
   P.lastDate = today;
+}
+// Für die Anzeige: Streak ist 0, wenn gestern nicht geübt wurde.
+function currentStreak(){
+  const today = new Date().toISOString().slice(0,10);
+  const yest = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  return (P.lastDate===today || P.lastDate===yest) ? (P.streak||0) : 0;
+}
+function addXP(n){
+  P.xp = (P.xp||0) + n;
+  const today = new Date().toISOString().slice(0,10);
+  if(P.dayXPDate !== today){ P.dayXPDate = today; P.dayXP = 0; }
+  P.dayXP = (P.dayXP||0) + n;
+  // XP-Tagebuch für den Wochenrückblick (letzte 30 Tage)
+  if(!P.xpLog) P.xpLog = {};
+  P.xpLog[today] = (P.xpLog[today]||0) + n;
+  const cutoff = new Date(Date.now()-30*86400000).toISOString().slice(0,10);
+  for(const d in P.xpLog){ if(d < cutoff) delete P.xpLog[d]; }
+  bumpStreak();
   save();
 }
-function addXP(n){ P.xp = (P.xp||0) + n; save(); }
+// Summe der letzten 7 Tage (inkl. heute) + Anzahl Übungstage
+function weekStats(){
+  let xp = 0, days = 0;
+  for(let i=0;i<7;i++){
+    const d = new Date(Date.now()-i*86400000).toISOString().slice(0,10);
+    const v = (P.xpLog||{})[d]||0;
+    if(v>0){ xp += v; days++; }
+  }
+  return {xp, days};
+}
+const XP_PER_LEVEL = 100;
+const DAILY_GOAL = 30;
+function levelInfo(){
+  const xp = P.xp||0;
+  const level = Math.floor(xp/XP_PER_LEVEL)+1;
+  const inLevel = xp % XP_PER_LEVEL;
+  return { level, inLevel, need: XP_PER_LEVEL, pct: Math.round(inLevel/XP_PER_LEVEL*100), xp };
+}
+function dailyXP(){
+  const today = new Date().toISOString().slice(0,10);
+  return (P.dayXPDate===today) ? (P.dayXP||0) : 0;
+}
+function ringSVG(pct,color){
+  const r=20, c=2*Math.PI*r, off=c*(1-Math.min(100,pct)/100);
+  return `<svg width="54" height="54" viewBox="0 0 54 54" style="flex-shrink:0"><circle cx="27" cy="27" r="${r}" fill="none" stroke="#E2E8F0" stroke-width="6"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 27 27)"/><text x="27" y="31" text-anchor="middle" font-size="13" font-weight="700" fill="#1E293B">${Math.round(pct)}%</text></svg>`;
+}
 function grammarStats(){
   return { done: Object.values(P.grammar).filter(g=>g.completed).length, total: GRAMMAR.length };
 }
@@ -2970,11 +3185,166 @@ function checkBadges(){
   if(P.writing.length >= 1) add('writing-explorer');
   if(P.irreg.length >= 20) add('irreg-champ');
   if(P.grammar['past'] && P.grammar['past'].completed) add('simple-past-master');
-  if(P.streak >= 3) add('streak-3');
+  if(currentStreak() >= 3) add('streak-3');
   const gs2 = grammarStats();
   if(gs2.done>=1 && Object.values(P.vocab).some(v=>v.tested) && P.reading.length>=1 && P.writing.length>=1) add('all-rounder');
+  if(currentStreak()>=7) add('streak-7');
+  if(currentStreak()>=30) add('streak-30');
+  const _gtot=['hangman','memory','qf','wordsearch'].reduce((a,k)=>a+(((P.gameStats||{})[k]||[]).length),0);
+  if(_gtot>=1) add('first-game');
+  if(_gtot>=10) add('game-master');
+  const _known=VOCAB.reduce((s,t)=>s+(((P.vocab[t.id]||{}).known)||[]).length,0);
+  if(_known>=100) add('word-collector');
+  if((P.xp||0)>=400) add('level-5');
 }
 
+
+// ═══════════════════════════════════════════════
+// SPACED REPETITION (Leitner-System)
+// Jedes geübte Wort bekommt ein "Fach" (1–5). Richtig beantwortet →
+// ein Fach höher, falsch → zurück in Fach 1. Je höher das Fach,
+// desto später wird das Wort wieder fällig (1/3/7/14/30 Tage).
+// Gespeichert in P.srs unter "topicId:wortIndex" → {b:Fach, d:Fälligkeitsdatum}.
+// ═══════════════════════════════════════════════
+const SRS_INTERVALS = [0, 1, 3, 7, 14, 30]; // Tage bis zur Wiederholung, Index = Fach
+
+function srsAddDays(n){ return new Date(Date.now()+n*86400000).toISOString().slice(0,10); }
+
+function srsUpdate(topicId, wordRef, correct){
+  const t = VOCAB.find(v=>v.id===topicId); if(!t) return;
+  const idx = t.words.indexOf(wordRef); if(idx < 0) return;
+  if(!P.srs) P.srs = {};
+  const k = topicId+':'+idx;
+  const e = P.srs[k] || {b:0};
+  e.b = correct ? Math.min(5, (e.b||0)+1) : 1;
+  e.d = srsAddDays(SRS_INTERVALS[e.b]);
+  P.srs[k] = e;
+  save();
+}
+
+// Alle heute (oder früher) fälligen Wörter
+function srsDueList(){
+  if(!P.srs) return [];
+  const today = new Date().toISOString().slice(0,10);
+  const due = [];
+  for(const k in P.srs){
+    const e = P.srs[k];
+    if(!e || !e.d || e.d > today) continue;
+    const ci = k.lastIndexOf(':');
+    const topicId = k.slice(0,ci), idx = parseInt(k.slice(ci+1),10);
+    const t = VOCAB.find(v=>v.id===topicId);
+    const w = t && t.words[idx];
+    if(w) due.push({topicId, idx, w, box:e.b||1});
+  }
+  return due;
+}
+
+// ── Wiederholungs-Session ──
+let _rev = null;
+
+function startReview(){
+  const due = [...srsDueList()].sort(()=>Math.random()-.5).slice(0,15);
+  // Optionen pro Frage einmal vorbereiten (nicht bei jedem Rendern neu mischen)
+  const items = due.map(d=>{
+    const t = VOCAB.find(v=>v.id===d.topicId);
+    const seenDe = new Set([d.w.de]);
+    const wrong = [...t.words].sort(()=>Math.random()-.5).filter(x=>{
+      if(x.en===d.w.en || seenDe.has(x.de)) return false;
+      seenDe.add(x.de); return true;
+    }).slice(0,3);
+    const opts = [...wrong.map(x=>x.de), d.w.de].sort(()=>Math.random()-.5);
+    return {...d, opts, correct: opts.indexOf(d.w.de), topicTitle: t.title};
+  });
+  _rev = {items, idx:0, score:0, done:false, answered:false};
+  go('review');
+}
+
+function renderReview(){
+  const dueCount = srsDueList().length;
+  if(!_rev || !_rev.items.length){
+    return `<div class="space-y-5">
+      <div style="display:flex;align-items:center;gap:1rem">
+        <button onclick="go('home')" style="background:none;border:none;color:#3B82F6;cursor:pointer">← ${T('nav_home')}</button>
+        <h1 style="font-size:1.4rem;font-weight:800;color:#1E293B">${T('review_title')}</h1>
+      </div>
+      <div class="card" style="text-align:center;padding:2rem">
+        <div style="font-size:3rem">${dueCount>0?'🔁':'🌟'}</div>
+        ${dueCount>0
+          ? `<p style="font-weight:700;color:#1E293B;margin:.5rem 0">${dueCount} ${T('review_due_words')}</p>
+             <button class="btn-primary" onclick="startReview()">${T('review_start')}</button>`
+          : `<p style="font-weight:700;color:#1E293B;margin:.5rem 0">${T('review_none')}</p>
+             <p style="font-size:.85rem;color:#64748B;margin-bottom:1rem">${T('review_none_sub')}</p>
+             <button class="btn-primary" onclick="go('vocabulary')">${T('nav_vocab')}</button>`}
+      </div>
+    </div>`;
+  }
+  if(_rev.done){
+    const pct = Math.round(_rev.score/_rev.items.length*100);
+    return `<div class="card space-y-4" style="text-align:center;padding:2rem">
+      <div style="font-size:3rem">${pct>=80?'🏆':pct>=60?'👍':'💪'}</div>
+      <h2 style="font-size:1.4rem;font-weight:800;color:#1E293B">${pct>=80?T('ex_result_excellent'):pct>=60?T('ex_result_good'):T('ex_result_practice')}</h2>
+      <div style="font-size:2rem;font-weight:800;color:${pct>=80?'#10B981':pct>=60?'#3B82F6':'#F59E0B'}">${_rev.score}/${_rev.items.length}</div>
+      ${pb(pct,'#0EA5E9')}
+      <p style="font-size:.82rem;color:#64748B">${T('review_done_sub')}</p>
+      <div style="display:flex;gap:.75rem;justify-content:center">
+        ${srsDueList().length>0?`<button class="btn-primary" onclick="startReview()">${T('review_more')}</button>`:''}
+        <button class="btn-secondary" onclick="go('home')">${T('nav_home')}</button>
+      </div>
+    </div>`;
+  }
+  const it = _rev.items[_rev.idx];
+  return `<div class="space-y-4">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button onclick="go('home')" style="background:none;border:none;color:#3B82F6;cursor:pointer">← ${T('nav_home')}</button>
+      <h1 style="font-size:1.3rem;font-weight:800;color:#1E293B;flex:1">${T('review_title')}</h1>
+      <span style="font-size:.85rem;color:#94A3B8">${_rev.idx+1}/${_rev.items.length}</span>
+    </div>
+    ${pb((_rev.idx/_rev.items.length)*100,'#0EA5E9')}
+    <div class="card space-y-4">
+      <p style="font-size:.72rem;color:#94A3B8;font-weight:600;text-transform:uppercase;letter-spacing:.05em">${it.topicTitle} · ${T('review_box')} ${it.box}</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:.4rem;padding:.75rem 0">
+        <p style="font-weight:700;color:#1E293B;font-size:1.15rem">${it.w.en}</p>
+        ${speakBtn(escQ(it.w.en))}
+      </div>
+      <div id="rev-opts">
+        ${it.opts.map((o,oi)=>`<button class="opt-btn" id="revopt-${oi}" onclick="revPick(${oi})">${o}</button>`).join('')}
+      </div>
+      <div id="rev-feedback"></div>
+    </div>
+  </div>`;
+}
+
+function revPick(oi){
+  if(_rev.answered) return;
+  _rev.answered = true;
+  const it = _rev.items[_rev.idx];
+  const right = oi === it.correct;
+  if(right) _rev.score++;
+  srsUpdate(it.topicId, it.w, right);
+  document.querySelectorAll('#rev-opts .opt-btn').forEach(b=>b.disabled=true);
+  const btn = document.getElementById('revopt-'+oi);
+  if(btn) btn.className = right?'opt-btn opt-correct':'opt-btn opt-wrong';
+  if(!right){
+    const cb = document.getElementById('revopt-'+it.correct);
+    if(cb) cb.className = 'opt-btn opt-correct';
+  }
+  const fb = document.getElementById('rev-feedback');
+  if(fb) fb.innerHTML = (right
+    ? `<div class="feedback-ok">${T('feedback_ok')} ${it.box<5?T('review_box_up'):''}</div>`
+    : `<div class="feedback-err">${T('feedback_wrong')} <strong>${it.w.de}</strong><br><span style="font-size:.82rem">${T('review_box_down')}</span></div>`)
+    + `<button class="btn-primary" style="margin-top:.75rem" onclick="revNext()">${_rev.idx+1<_rev.items.length?T('btn_next'):T('ex_show_result')}</button>`;
+}
+
+function revNext(){
+  _rev.idx++;
+  _rev.answered = false;
+  if(_rev.idx >= _rev.items.length){
+    _rev.done = true;
+    addXP(Math.max(5, _rev.score));
+    checkBadges(); save();
+  }
+  go('review');
+}
 
 // ═══════════════════════════════════════════════
 // OHE DATA (Observe – Hypothesise – Experiment)
@@ -2994,18 +3364,18 @@ const GRAMMAR_OHE = {
     signal: ['every day','always','usually','often','sometimes','never','on Mondays','at weekends'],
     formula: [
       {type:'pos', label:'✅ Positive', cols:['I / You / We / They','<strong style="color:#10B981">play</strong>','football.']},
-      {type:'pos', label:'', cols:['He / She / It','<strong style="color:#10B981">play<span style="color:#F59E0B">s</span></strong>','football.']},
-      {type:'neg', label:'❌ Negative', cols:['I / You / We / They','<span style="color:#EF4444;font-weight:700">don\'t</span> play','football.']},
-      {type:'neg', label:'', cols:['He / She / It','<span style="color:#EF4444;font-weight:700">doesn\'t</span> play','football.']},
-      {type:'q', label:'❓ Question', cols:['<span style="color:#EF4444;font-weight:700">Do</span>','you / we / they','play football?']},
-      {type:'q', label:'', cols:['<span style="color:#EF4444;font-weight:700">Does</span>','he / she / it','play football?']}
+      {type:'pos', label:'', cols:['He / She / It','<strong style="color:#10B981">play<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">s</span></strong>','football.']},
+      {type:'neg', label:'❌ Negative', cols:['I / You / We / They','<span style="color:#F97316;font-weight:700">do</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','football.']},
+      {type:'neg', label:'', cols:['He / She / It','<span style="color:#F97316;font-weight:700">does</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','football.']},
+      {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Do</span>','you / we / they','play football?']},
+      {type:'q', label:'', cols:['<span style="color:#F97316;font-weight:700">Does</span>','he / she / it','play football?']}
     ]
   },
   'past': {
     observe: [
-      'I play<span style="color:#10B981">ed</span> football <span style="color:#0891B2">yesterday</span>.',
-      'She went to London <span style="color:#0891B2">last summer</span>.',
-      'They didn\'t watch TV <span style="color:#0891B2">last night</span>.',
+      'I played football yesterday.',
+      'She went to London last summer.',
+      'They didn\'t watch TV last night.',
       'Did you see the film?',
       'We had a great time at the party.'
     ],
@@ -3015,10 +3385,10 @@ const GRAMMAR_OHE = {
     hintEN: 'Regular: + ed &nbsp;|&nbsp; Irregular: own form (go→went)',
     signal: ['yesterday','last week','last night','last summer','ago','in 2020','two days ago'],
     formula: [
-      {type:'pos', label:'✅ Regular', cols:['I / She / They','<strong style="color:#10B981">play<span style="color:#F59E0B">ed</span></strong>','football.']},
+      {type:'pos', label:'✅ Regular', cols:['I / She / They','<strong style="color:#10B981">play<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ed</span></strong>','football.']},
       {type:'pos', label:'✅ Irregular', cols:['She','<strong style="color:#10B981">went</strong>','to London.']},
-      {type:'neg', label:'❌ Negative', cols:['all persons','<span style="color:#EF4444;font-weight:700">didn\'t</span> play','(base form!)']},
-      {type:'q', label:'❓ Question', cols:['<span style="color:#EF4444;font-weight:700">Did</span>','you / he / they','play? (base form!)']},
+      {type:'neg', label:'❌ Negative', cols:['all persons','<span style="color:#F97316;font-weight:700">did</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','(base form!)']},
+      {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Did</span>','you / he / they','play? (base form!)']},
     ]
   },
   'wo': {
@@ -3034,28 +3404,28 @@ const GRAMMAR_OHE = {
     hintEN: 'English: ALWAYS S – V – O (no exceptions!)',
     signal: ['Subject → Verb → Object','Time: at start or end of sentence','Question: verb before subject'],
     formula: [
-      {type:'pos', label:'✅ Positive', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>','<span style="color:#8B5CF6">O</span> + time']},
-      {type:'neg', label:'❌ Negative', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#EF4444">doesn\'t/didn\'t</span> + V','<span style="color:#8B5CF6">O</span>']},
-      {type:'q', label:'❓ Question', cols:['<span style="color:#EF4444">Do/Does/Did</span>','<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>?']}
+      {type:'pos', label:'✅ Positive', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>','<span style="color:#64748B">O</span> + time']},
+      {type:'neg', label:'❌ Negative', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#EF4444">doesn\'t/didn\'t</span> + V','<span style="color:#64748B">O</span>']},
+      {type:'q', label:'❓ Question', cols:['<span style="color:#F97316">Do/Does/Did</span>','<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>?']}
     ]
   },
   'pp': {
     observe: [
-      'Look! She is rid<span style="color:#F59E0B">ing</span> her bike.',
-      'We are watch<span style="color:#F59E0B">ing</span> TV right now.',
-      'My dad is work<span style="color:#F59E0B">ing</span> in the garden at the moment.',
-      'She isn\'t listen<span style="color:#F59E0B">ing</span> to music.'
+      'Look! She is riding her bike.',
+      'We are watching TV right now.',
+      'My dad is working in the garden at the moment.',
+      'She isn\'t listening to music.'
     ],
     observeQ: 'Was haben alle Verben gemeinsam? Was steht immer vor dem Verb + -ing?',
     observeQEN: 'What do all the verbs have in common? What always comes before verb + -ing?',
     hint: 'am / is / are + verb + -ing',
     signal: ['now','right now','at the moment','Look!','Listen!','currently'],
     formula: [
-      {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#EF4444;font-weight:700">am</span>','<span style="color:#10B981">read</span><span style="color:#F59E0B">ing</span>.']},
-      {type:'pos', label:'', cols:['He / She','<span style="color:#EF4444;font-weight:700">is</span>','<span style="color:#10B981">talk</span><span style="color:#F59E0B">ing</span>.']},
-      {type:'pos', label:'', cols:['We / They','<span style="color:#EF4444;font-weight:700">are</span>','<span style="color:#10B981">play</span><span style="color:#F59E0B">ing</span>.']},
-      {type:'neg', label:'❌ Negative', cols:['He','<span style="color:#EF4444;font-weight:700">isn\'t</span>','watch<span style="color:#F59E0B">ing</span> TV.']},
-      {type:'q', label:'❓ Question', cols:['<span style="color:#EF4444;font-weight:700">Are</span> you','read<span style="color:#F59E0B">ing</span>','a book?']}
+      {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#F97316;font-weight:700">am</span>','<span style="color:#10B981">read</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
+      {type:'pos', label:'', cols:['He / She','<span style="color:#F97316;font-weight:700">is</span>','<span style="color:#10B981">talk</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
+      {type:'pos', label:'', cols:['We / They','<span style="color:#F97316;font-weight:700">are</span>','<span style="color:#10B981">play</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
+      {type:'neg', label:'❌ Negative', cols:['He','<span style="color:#F97316;font-weight:700">is</span><span style="color:#EF4444;font-weight:700">n\'t</span>','watch<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span> TV.']},
+      {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Are</span> you','read<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>','a book?']}
     ]
   },
   'gtf': {
@@ -3071,10 +3441,10 @@ const GRAMMAR_OHE = {
     hintEN: 'am / is / are + going to + base form',
     signal: ['tomorrow','next week','next summer','soon','this weekend'],
     formula: [
-      {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#EF4444;font-weight:700">am</span> <span style="color:#8B5CF6;font-weight:700">going to</span>','play football.']},
-      {type:'pos', label:'', cols:['She','<span style="color:#EF4444;font-weight:700">is</span> <span style="color:#8B5CF6;font-weight:700">going to</span>','start a hobby.']},
-      {type:'neg', label:'❌ Negative', cols:['We','<span style="color:#EF4444;font-weight:700">aren\'t</span> <span style="color:#8B5CF6;font-weight:700">going to</span>','travel.']},
-      {type:'q', label:'❓ Question', cols:['<span style="color:#EF4444;font-weight:700">Is</span> he','<span style="color:#8B5CF6;font-weight:700">going to</span>','join the team?']}
+      {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#F97316;font-weight:700">am</span> <span style="color:#F97316;font-weight:700">going to</span>','play football.']},
+      {type:'pos', label:'', cols:['She','<span style="color:#F97316;font-weight:700">is</span> <span style="color:#F97316;font-weight:700">going to</span>','start a hobby.']},
+      {type:'neg', label:'❌ Negative', cols:['We','<span style="color:#F97316;font-weight:700">are</span><span style="color:#EF4444;font-weight:700">n\'t</span> <span style="color:#F97316;font-weight:700">going to</span>','travel.']},
+      {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Is</span> he','<span style="color:#F97316;font-weight:700">going to</span>','join the team?']}
     ]
   },
   'qn': {
@@ -3091,11 +3461,11 @@ const GRAMMAR_OHE = {
     hintEN: 'Present: do/does | Past: did | always + base form',
     signal: ['Do...?','Does...?','Did...?','Where/What/When/Who/How + do/does/did'],
     formula: [
-      {type:'q', label:'❓ Present (I/you/we/they)', cols:['<span style="color:#EF4444;font-weight:700">Do</span>','you','like pizza?']},
-      {type:'q', label:'❓ Present (he/she/it)', cols:['<span style="color:#EF4444;font-weight:700">Does</span>','she','play tennis?']},
-      {type:'q', label:'❓ Past (all)', cols:['<span style="color:#EF4444;font-weight:700">Did</span>','they','win?']},
-      {type:'neg', label:'❌ Negative', cols:['I / you / we / they','<span style="color:#EF4444;font-weight:700">don\'t</span>','like it.']},
-      {type:'neg', label:'', cols:['He / she / it','<span style="color:#EF4444;font-weight:700">doesn\'t</span>','like it.']}
+      {type:'q', label:'❓ Present (I/you/we/they)', cols:['<span style="color:#F97316;font-weight:700">Do</span>','you','like pizza?']},
+      {type:'q', label:'❓ Present (he/she/it)', cols:['<span style="color:#F97316;font-weight:700">Does</span>','she','play tennis?']},
+      {type:'q', label:'❓ Past (all)', cols:['<span style="color:#F97316;font-weight:700">Did</span>','they','win?']},
+      {type:'neg', label:'❌ Negative', cols:['I / you / we / they','<span style="color:#F97316;font-weight:700">do</span><span style="color:#EF4444;font-weight:700">n\'t</span>','like it.']},
+      {type:'neg', label:'', cols:['He / she / it','<span style="color:#F97316;font-weight:700">does</span><span style="color:#EF4444;font-weight:700">n\'t</span>','like it.']}
     ]
   }
 };
@@ -3113,7 +3483,7 @@ function renderFormula(id){
   const exSentences = (ohe.observe||[]).slice(0,2);
   const exHTML = exSentences.length ? `<div style="margin-top:.75rem">
     <p style="font-size:.75rem;font-weight:700;color:#64748B;margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.04em">${T('grammar_examples')}</p>
-    ${exSentences.map(s=>`<div style="background:#F1F5F9;border-left:3px solid #3B82F6;padding:.4rem .75rem;border-radius:0 .5rem .5rem 0;font-size:.9rem;font-weight:600;color:#1E293B;margin-bottom:.3rem">${s}</div>`).join('')}
+    ${exSentences.map(s=>`<div style="background:#F1F5F9;border-left:3px solid #3B82F6;padding:.4rem .75rem;border-radius:0 .5rem .5rem 0;font-size:.9rem;font-weight:600;color:#1E293B;margin-bottom:.3rem">${colorSentence(s,id)}</div>`).join('')}
   </div>` : '';
   return `<div style="overflow-x:auto;margin-bottom:.5rem">
     <table style="border-collapse:collapse;width:100%;border-radius:.75rem;overflow:hidden;border:1px solid #E2E8F0">
@@ -3129,8 +3499,33 @@ function renderFormula(id){
 let _state = { section:'home', sub:null, data:null };
 
 function go(section, sub, data){
-  _state = { section, sub: sub||null, data: (data !== undefined && data !== null) ? data : null };
-  checkStreak();
+  _navigate({ section, sub: sub||null, data: (data !== undefined && data !== null) ? data : null }, true);
+}
+
+// Browser-History: Zurück-Geste/-Taste führt zur vorherigen Seite statt
+// die App zu schließen. Gleiche Seite (z.B. nächste Quizfrage) wird ersetzt,
+// neue Seite angehängt.
+window.addEventListener('popstate', e => {
+  if(e.state && e.state.section) _navigate(e.state, false);
+  else _navigate({section:'home', sub:null, data:null}, false);
+});
+
+function _navigate(st, writeHistory){
+  const section = st.section;
+  // Quick-Fire-Timer stoppen, wenn die Seite verlassen wird – sonst rendert
+  // das Intervall jede Sekunde die neue Seite neu (Eingaben gehen verloren).
+  if(typeof _qfState !== 'undefined' && _qfState.timer && section !== 'grammar-quickfire'){
+    clearInterval(_qfState.timer);
+    _qfState = {queue:[], qIdx:0, score:0, answered:0, history:[], time:60, timer:null, done:false, topicId:null, started:false};
+  }
+  const samePage = _state && _state.section===st.section && _state.sub===st.sub && _state.data===st.data;
+  _state = st;
+  if(writeHistory && window.history && history.pushState){
+    try{
+      if(!history.state || samePage) history.replaceState(st, '', '#'+section);
+      else history.pushState(st, '', '#'+section);
+    }catch(e){}
+  }
   document.getElementById('app').innerHTML = render(_state);
   document.querySelectorAll('.nav-link').forEach(el=>{
     const sec = el.getAttribute('onclick').match(/go\('([\w-]+)'/)?.[1];
@@ -3178,6 +3573,7 @@ function render(s){
     case 'irreg-memory': return renderIrregMemory();
     case 'grammar-quickfire': return renderGrammarQuickfire(s.sub);
     case 'vocab-test': return renderVocabTest();
+    case 'review': return renderReview();
     case 'skills': return renderReadingList();
     case 'reading-list': return renderReadingList();
     case 'reading-task': return renderReadingTask(s.sub);
@@ -3210,6 +3606,242 @@ function pb(val, color){
 // ═══════════════════════════════════════════════
 // HOME
 // ═══════════════════════════════════════════════
+
+// ── PROFIL: Name + Avatar ──
+// Avatare als Belohnung: die ersten 6 sind frei, weitere schalten sich
+// mit steigendem Level frei (sichtbar mit 🔒 im Profil).
+const AVATAR_TIERS = [
+  {lvl:1,  list:['🦊','🐼','🦁','🐸','🦄','🐨']},
+  {lvl:2,  list:['🐯','🐙','🦜','🐬']},
+  {lvl:3,  list:['🦉','🐢','🐝']},
+  {lvl:5,  list:['🦖','🐺','⚽']},
+  {lvl:7,  list:['🎸','🚀']},
+  {lvl:10, list:['🌟','🍀']}
+];
+const AVATARS = AVATAR_TIERS.flatMap(t=>t.list);
+function avatarLevel(a){ const t = AVATAR_TIERS.find(t=>t.list.includes(a)); return t?t.lvl:1; }
+function avatarsUnlocked(){ const lv = levelInfo().level; return AVATARS.filter(a=>avatarLevel(a)<=lv); }
+
+function showProfile(){
+  if(document.getElementById('profile-popup')) return;
+  const ov = document.createElement('div');
+  ov.id = 'profile-popup';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:1.25rem';
+  ov.onclick = (e)=>{ if(e.target===ov) ov.remove(); };
+  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:24rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:85vh;overflow-y:auto">
+    <h2 style="font-size:1.15rem;font-weight:800;color:#1E293B;margin-bottom:.75rem">${T('profile_title')}</h2>
+    <label style="font-size:.82rem;font-weight:700;color:#475569;display:block;margin-bottom:.3rem">${T('profile_name_label')}</label>
+    <input id="profile-name-input" type="text" maxlength="20" value="${(P.name||'').replace(/"/g,'&quot;')}" placeholder="${T('profile_name_ph')}"
+      style="width:100%;border:1.5px solid #E2E8F0;border-radius:.75rem;padding:.55rem .75rem;font-size:.95rem;outline:none;box-sizing:border-box;margin-bottom:1rem">
+    <p style="font-size:.82rem;font-weight:700;color:#475569;margin-bottom:.4rem">${T('profile_avatar_label')}</p>
+    <div id="profile-avatars" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin-bottom:.5rem">
+      ${AVATARS.map(a=>{
+        const locked = avatarLevel(a) > levelInfo().level;
+        if(locked) return `<div title="${T('profile_avatar_locked_pre')}${avatarLevel(a)}" style="font-size:1.5rem;padding:.35rem;border-radius:.7rem;background:#F1F5F9;border:2px dashed #CBD5E1;text-align:center;position:relative;opacity:.55;filter:grayscale(1)">${a}<span style="position:absolute;bottom:-2px;right:0;font-size:.62rem;background:#475569;color:#fff;border-radius:99px;padding:0 .3rem">🔒${avatarLevel(a)}</span></div>`;
+        return `<button onclick="pickAvatar('${a}')" data-av="${a}" style="font-size:1.5rem;padding:.35rem;border-radius:.7rem;cursor:pointer;background:${a===(P.avatar||'')?'#DBEAFE':'#F8FAFC'};border:2px solid ${a===(P.avatar||'')?'#3B82F6':'#E2E8F0'}">${a}</button>`;
+      }).join('')}
+    </div>
+    <p style="font-size:.72rem;color:#94A3B8;margin-bottom:1rem">${T('profile_avatar_unlock_hint')}</p>
+    <button onclick="saveProfile()" class="btn-primary" style="width:100%">${T('profile_save')}</button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+let _pendingAvatar = null;
+function pickAvatar(a){
+  _pendingAvatar = a;
+  document.querySelectorAll('#profile-avatars button').forEach(b=>{
+    const sel = b.getAttribute('data-av')===a;
+    b.style.background = sel?'#DBEAFE':'#F8FAFC';
+    b.style.borderColor = sel?'#3B82F6':'#E2E8F0';
+  });
+}
+function saveProfile(){
+  const inp = document.getElementById('profile-name-input');
+  P.name = (inp ? inp.value : '').trim().slice(0,20);
+  if(_pendingAvatar !== null) P.avatar = _pendingAvatar;
+  _pendingAvatar = null;
+  save();
+  const p = document.getElementById('profile-popup'); if(p) p.remove();
+  document.getElementById('app').innerHTML = render(_state);
+}
+
+// ═══════════════════════════════════════════════
+// ONBOARDING + SPRACH-CHECK
+// Beim ersten Öffnen verpflichtend: Name + Avatar → Klasse → Einstufungs-
+// Check (2 Fragen je Grammatikthema). Ergebnis wird in P.assessments
+// gespeichert und kann später als "Zwischenstand" wiederholt werden –
+// so wird die Entwicklung sichtbar.
+// ═══════════════════════════════════════════════
+let _ob = null;
+
+function buildAssessmentQuestions(){
+  const qs = [];
+  GRAMMAR.forEach(t=>{
+    const pool = [
+      ...t.exercises.filter(e=>e.type==='mc').flatMap(e=>e.questions||[]),
+      ...((typeof GRAMMAR_POOL!=='undefined' && GRAMMAR_POOL[t.id])||[]).filter(e=>e.type==='mc').flatMap(e=>e.questions||[])
+    ];
+    for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+    pool.slice(0,2).forEach(q=>qs.push({topic:t.id, title:t.title, q}));
+  });
+  for(let i=qs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[qs[i],qs[j]]=[qs[j],qs[i]];}
+  return qs;
+}
+
+// mode 'full' = erstes Öffnen (Name+Avatar+Klasse+Check) · 'check' = nur Zwischenstand
+function startOnboarding(mode){
+  _ob = { mode: mode||'full', step: mode==='check'?3:1,
+    name: P.name||'', avatar: P.avatar||'', cls: P.cls||0,
+    questions: buildAssessmentQuestions(), qIdx: 0, right: 0, perTopic: {}, answered: false };
+  renderOnboarding();
+}
+
+function renderOnboarding(){
+  let ov = document.getElementById('onboarding-popup');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'onboarding-popup';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:1rem';
+    document.body.appendChild(ov);
+  }
+  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:26rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto">${obStepHTML()}</div>`;
+}
+
+function obStepHTML(){
+  const s = _ob;
+  if(s.step===1){
+    return `<div style="text-align:center;font-size:2.2rem;margin-bottom:.3rem">👋</div>
+      <h2 style="font-size:1.2rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.3rem">${T('ob_welcome_title')}</h2>
+      <p style="font-size:.85rem;color:#64748B;text-align:center;margin-bottom:1rem">${T('ob_welcome_sub')}</p>
+      <label style="font-size:.82rem;font-weight:700;color:#475569;display:block;margin-bottom:.3rem">${T('profile_name_label')}</label>
+      <input id="ob-name" type="text" maxlength="20" value="${(s.name||'').replace(/"/g,'&quot;')}" placeholder="${T('profile_name_ph')}"
+        style="width:100%;border:1.5px solid #E2E8F0;border-radius:.75rem;padding:.55rem .75rem;font-size:.95rem;outline:none;box-sizing:border-box;margin-bottom:1rem">
+      <p style="font-size:.82rem;font-weight:700;color:#475569;margin-bottom:.4rem">${T('profile_avatar_label')}</p>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:.4rem;margin-bottom:1rem">
+        ${avatarsUnlocked().map(a=>`<button onclick="obPickAvatar('${a}')" data-av="${a}" style="font-size:1.5rem;padding:.35rem;border-radius:.7rem;cursor:pointer;background:${a===s.avatar?'#DBEAFE':'#F8FAFC'};border:2px solid ${a===s.avatar?'#3B82F6':'#E2E8F0'}">${a}</button>`).join('')}
+      </div>
+      <p id="ob-name-hint" style="display:none;font-size:.8rem;color:#DC2626;margin-bottom:.5rem">${T('ob_name_required')}</p>
+      <button class="btn-primary" style="width:100%" onclick="obNext1()">${T('btn_next')}</button>`;
+  }
+  if(s.step===2){
+    return `<div style="text-align:center;font-size:2.2rem;margin-bottom:.3rem">🏫</div>
+      <h2 style="font-size:1.2rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.3rem">${T('ob_cls_title')}</h2>
+      <p style="font-size:.85rem;color:#64748B;text-align:center;margin-bottom:1.25rem">${T('ob_cls_sub')}</p>
+      <div style="display:flex;gap:.75rem">
+        <button onclick="obSetCls(5)" style="flex:1;padding:1.1rem;border-radius:.9rem;border:2px solid #BFDBFE;background:#EFF6FF;font-size:1.05rem;font-weight:800;color:#1E40AF;cursor:pointer">${T('vocab_k5')}</button>
+        <button onclick="obSetCls(6)" style="flex:1;padding:1.1rem;border-radius:.9rem;border:2px solid #FDE68A;background:#FFFBEB;font-size:1.05rem;font-weight:800;color:#92400E;cursor:pointer">${T('vocab_k6')}</button>
+      </div>`;
+  }
+  if(s.step===3){
+    const item = s.questions[s.qIdx];
+    if(!item){ s.step=4; return obStepHTML(); }
+    return `<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+        <span style="font-size:1.4rem">🧭</span>
+        <div style="flex:1">
+          <p style="font-weight:800;color:#1E293B;font-size:.95rem">${T('ob_check_title')}</p>
+          <p style="font-size:.75rem;color:#94A3B8">${s.qIdx+1}/${s.questions.length} · ${item.title}</p>
+        </div>
+      </div>
+      ${pb((s.qIdx/s.questions.length)*100,'#8B5CF6')}
+      ${s.qIdx===0&&!s.answered?`<p style="font-size:.8rem;color:#64748B;background:#F5F3FF;border-radius:.5rem;padding:.5rem .7rem;margin:.6rem 0">${T('ob_check_sub')}</p>`:''}
+      <p style="font-weight:700;color:#1E293B;font-size:1rem;line-height:1.4;margin:.75rem 0">${item.q.q}</p>
+      <div id="ob-opts">
+        ${item.q.opts.map((o,oi)=>`<button class="opt-btn" id="obopt-${oi}" onclick="obAnswer(${oi})">${o}</button>`).join('')}
+      </div>
+      <div id="ob-feedback"></div>`;
+  }
+  // Schritt 4: Ergebnis
+  const total = s.questions.length;
+  const pct = total>0 ? Math.round(s.right/total*100) : 0;
+  const rows = GRAMMAR.map(t=>{
+    const r = s.perTopic[t.id]||{right:0,total:0};
+    if(r.total===0) return '';
+    const tp = Math.round(r.right/r.total*100);
+    return `<div style="margin-bottom:.5rem">
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.15rem">
+        <span style="font-weight:600;color:#334155">${t.title}</span>
+        <span style="color:${tp>=60?'#059669':'#DC2626'};font-weight:700">${r.right}/${r.total}</span>
+      </div>
+      ${pb(tp, tp>=60?'#10B981':'#F59E0B')}
+    </div>`;
+  }).join('');
+  const focus = GRAMMAR.filter(t=>{ const r=s.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
+  return `<div style="text-align:center;font-size:2.2rem;margin-bottom:.3rem">${pct>=80?'🏆':pct>=50?'💪':'🌱'}</div>
+    <h2 style="font-size:1.2rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.2rem">${T('ob_result_title')}</h2>
+    <p style="font-size:1.6rem;font-weight:800;text-align:center;color:${pct>=60?'#10B981':'#F59E0B'};margin-bottom:.75rem">${pct}%</p>
+    <div style="background:#F8FAFC;border-radius:.75rem;padding:.75rem;margin-bottom:.75rem">${rows}</div>
+    ${focus.length?`<div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:.75rem;padding:.7rem .8rem;margin-bottom:.9rem">
+      <p style="font-size:.82rem;font-weight:700;color:#92400E;margin-bottom:.25rem">🎯 ${T('ob_focus_label')}</p>
+      <p style="font-size:.82rem;color:#B45309">${focus.map(t=>t.title).join(' · ')}</p>
+    </div>`:`<p style="font-size:.85rem;color:#059669;font-weight:600;text-align:center;margin-bottom:.9rem">${T('ob_allgood')}</p>`}
+    <button class="btn-primary" style="width:100%" onclick="finishOnboarding()">${T('ob_start_btn')}</button>`;
+}
+
+let _obPendingAvatar = null;
+function obPickAvatar(a){
+  _ob.avatar = a;
+  document.querySelectorAll('#onboarding-popup [data-av]').forEach(b=>{
+    const sel = b.getAttribute('data-av')===a;
+    b.style.background = sel?'#DBEAFE':'#F8FAFC';
+    b.style.borderColor = sel?'#3B82F6':'#E2E8F0';
+  });
+}
+function obNext1(){
+  const inp = document.getElementById('ob-name');
+  const name = (inp?inp.value:'').trim();
+  if(name.length < 2){ const h=document.getElementById('ob-name-hint'); if(h)h.style.display='block'; return; }
+  _ob.name = name.slice(0,20);
+  if(!_ob.avatar) _ob.avatar = AVATARS[0];
+  _ob.step = 2;
+  renderOnboarding();
+}
+function obSetCls(c){ _ob.cls = c; _ob.step = 3; renderOnboarding(); }
+function obAnswer(oi){
+  const s = _ob;
+  if(s.answered) return;
+  s.answered = true;
+  const item = s.questions[s.qIdx];
+  const right = oi === item.q.correct;
+  if(right) s.right++;
+  if(!s.perTopic[item.topic]) s.perTopic[item.topic] = {right:0,total:0};
+  s.perTopic[item.topic].total++;
+  if(right) s.perTopic[item.topic].right++;
+  document.querySelectorAll('#ob-opts .opt-btn').forEach(b=>b.disabled=true);
+  const btn = document.getElementById('obopt-'+oi);
+  if(btn) btn.className = right?'opt-btn opt-correct':'opt-btn opt-wrong';
+  if(!right){ const cb=document.getElementById('obopt-'+item.q.correct); if(cb) cb.className='opt-btn opt-correct'; }
+  const fb = document.getElementById('ob-feedback');
+  if(fb) fb.innerHTML = `<button class="btn-primary" style="width:100%;margin-top:.6rem" onclick="obNextQ()">${s.qIdx+1<s.questions.length?T('btn_next'):T('ex_show_result')}</button>`;
+}
+function obNextQ(){
+  _ob.qIdx++;
+  _ob.answered = false;
+  if(_ob.qIdx >= _ob.questions.length) _ob.step = 4;
+  renderOnboarding();
+}
+function finishOnboarding(){
+  const s = _ob;
+  if(s.mode==='full'){
+    P.name = s.name; P.avatar = s.avatar;
+    if(s.cls) P.cls = s.cls;
+  }
+  const total = s.questions.length;
+  if(!P.assessments) P.assessments = [];
+  P.assessments.push({ date: new Date().toISOString().slice(0,10),
+    pct: total>0?Math.round(s.right/total*100):0, perTopic: s.perTopic });
+  if(P.assessments.length > 12) P.assessments.shift();
+  P.onboarded = true;
+  addXP(10); checkBadges(); save();
+  _ob = null;
+  const ov = document.getElementById('onboarding-popup'); if(ov) ov.remove();
+  go(_state && _state.section==='lernweg' ? 'lernweg' : 'home');
+}
+// Letzter Check: Themen unter 60 % (für die Schwerpunkt-Karte auf der Startseite)
+function assessmentFocus(){
+  const a = (P.assessments||[])[P.assessments?P.assessments.length-1:0];
+  if(!a) return [];
+  return GRAMMAR.filter(t=>{ const r=a.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
+}
 
 function getWeakAreas(){
   const errors = P.errors || {};
@@ -3245,14 +3877,74 @@ function renderHome(){
   <div class="space-y-8">
     <div class="card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-        <div>
-          <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.4rem">${T('home_title')}</h1>
-          <p style="opacity:.9;max-width:36rem;font-size:.95rem">${T('home_sub')}</p>
+        <div style="display:flex;align-items:flex-start;gap:.9rem;min-width:0">
+          <button onclick="showProfile()" title="${T('profile_edit')}" aria-label="${T('profile_edit')}" style="font-size:2rem;line-height:1;background:rgba(255,255,255,.2);border:none;border-radius:1rem;padding:.55rem;cursor:pointer;flex-shrink:0">${P.avatar||'🙂'}</button>
+          <div style="min-width:0">
+            <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.4rem;overflow-wrap:anywhere">${P.name ? T('home_title_name').replace('{name}', P.name) : T('home_title')}</h1>
+            <p style="opacity:.9;max-width:36rem;font-size:.95rem">${T('home_sub')}</p>
+          </div>
         </div>
-        ${P.streak>1?`<div style="text-align:center;background:rgba(255,255,255,.2);border-radius:1rem;padding:.75rem 1rem;flex-shrink:0"><div style="font-size:1.5rem">🔥</div><div style="font-size:1.5rem;font-weight:800">${P.streak}</div><div style="font-size:.7rem;opacity:.8">${T('home_streak')}</div></div>`:''}
+        ${currentStreak()>=1?`<div style="text-align:center;background:rgba(255,255,255,.2);border-radius:1rem;padding:.75rem 1rem;flex-shrink:0"><div style="font-size:1.5rem">🔥</div><div style="font-size:1.5rem;font-weight:800">${currentStreak()}</div><div style="font-size:.7rem;opacity:.8">${T('home_streak')}</div></div>`:''}
       </div>
     </div>
 
+    ${!P.name ? `<div class="card" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;background:#F5F3FF;border-color:#C4B5FD;cursor:pointer" onclick="showProfile()">
+      <div style="font-size:1.8rem">👋</div>
+      <div style="flex:1;min-width:12rem">
+        <p style="font-weight:700;color:#4C1D95;font-size:.92rem">${T('profile_setup_title')}</p>
+        <p style="font-size:.8rem;color:#6D28D9">${T('profile_setup_sub')}</p>
+      </div>
+      <button class="btn-primary" style="background:#7C3AED" onclick="event.stopPropagation();showProfile()">${T('profile_setup_btn')}</button>
+    </div>` : ''}
+
+
+    <h2 style="font-size:.85rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:-.5rem">✨ ${T('home_today_zone')}</h2>
+
+    ${(()=>{ const lv=levelInfo(); const dg=dailyXP(); const dgPct=Math.min(100,Math.round(dg/DAILY_GOAL*100)); return `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
+      <div class="card" style="display:flex;align-items:center;gap:1rem">
+        <div style="font-size:2rem">🚀</div>
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:800;color:#1E293B;font-size:1rem">${T('home_level')||'Level'} ${lv.level}</p>
+          <div style="margin:.35rem 0">${pb(lv.pct,'#8B5CF6')}</div>
+          <p style="font-size:.72rem;color:#94A3B8">${lv.inLevel}/${lv.need} XP · ${T('home_to_next')||'bis Level'} ${lv.level+1}</p>
+        </div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:1rem">
+        ${ringSVG(dgPct,'#16A34A')}
+        <div style="flex:1;min-width:0">
+          <p style="font-weight:800;color:#1E293B;font-size:1rem">${T('home_daily_goal')||'Tagesziel'}</p>
+          <p style="font-size:.8rem;color:#64748B">${dg}/${DAILY_GOAL} XP ${T('home_today_label')||'heute'}</p>
+          ${dgPct>=100?`<p style="font-size:.78rem;color:#16A34A;font-weight:700">${T('home_goal_done')||'Geschafft!'}</p>`:''}
+        </div>
+      </div>
+    </div>`; })()}
+
+    ${(()=>{ const due=srsDueList().length; return due>0?`
+    <div class="card" style="background:linear-gradient(135deg,#F0F9FF,#E0F2FE);border-color:#7DD3FC;display:flex;align-items:center;gap:1rem;cursor:pointer" onclick="startReview()">
+      <div style="font-size:2rem">🔁</div>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:800;color:#0C4A6E;font-size:1rem">${T('review_title')}</p>
+        <p style="font-size:.85rem;color:#0369A1">${due} ${T('review_due_words')}</p>
+      </div>
+      <button class="btn-primary" style="background:#0EA5E9" onclick="event.stopPropagation();startReview()">${T('review_start')}</button>
+    </div>`:''; })()}
+
+    ${(()=>{ // Schwerpunkte aus dem letzten Sprach-Check
+      const focus = assessmentFocus();
+      if(!focus.length) return '';
+      return `<div class="card" style="background:#FFF7ED;border-color:#FED7AA">
+        <p style="font-weight:800;color:#9A3412;font-size:.95rem;margin-bottom:.2rem">🎯 ${T('home_focus_title')}</p>
+        <p style="font-size:.8rem;color:#C2410C;margin-bottom:.6rem">${T('home_focus_sub')}</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          ${focus.map(t=>`<button onclick="go('grammar-topic','${t.id}')" style="background:#fff;border:1.5px solid #FDBA74;color:#9A3412;border-radius:.6rem;padding:.4rem .8rem;font-size:.82rem;font-weight:700;cursor:pointer">${t.title} →</button>`).join('')}
+        </div>
+      </div>`;
+    })()}
+
+    ${backupNudgeHTML()}
+
+    <h2 style="font-size:.85rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:-.5rem">🧭 ${T('home_explore_zone')}</h2>
 
     <div class="card" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border-color:#86EFAC">
       <h2 style="font-weight:700;color:#166534;margin-bottom:.4rem">${T('home_timer')}</h2>
@@ -3376,7 +4068,7 @@ function renderWortarten(){
      ],
      examples:['I have <u>a dog</u>.','The <u>book</u> is on the table.','<u>Emma</u> lives in <u>London</u>.']
     },
-    {id:'verb',emoji:'⚡',title:'Verbs',color:'#FFF7ED',border:'#FED7AA',accent:'#92400E',
+    {id:'verb',emoji:'⚡',title:'Verbs',color:'#ECFDF5',border:'#6EE7B7',accent:'#065F46',
      intro:isDE?'Verben drücken Handlungen, Vorgänge oder Zustände aus. Im Englischen verändert sich das Verb je nach Zeitform und Person.':'Verbs express actions, events or states. In English, the verb form changes depending on tense and person.',
      rows:[
        ['Simple Present','I play · he play<strong>s</strong>'],
@@ -3388,7 +4080,7 @@ function renderWortarten(){
      ],
      examples:['She <u>plays</u> football every day.','We <u>went</u> to the cinema yesterday.','He <u>is reading</u> a book right now.']
     },
-    {id:'adj',emoji:'🎨',title:'Adjectives',color:'#F0FDF4',border:'#6EE7B7',accent:'#065F46',
+    {id:'adj',emoji:'🎨',title:'Adjectives',color:'#FFFBEB',border:'#FDE68A',accent:'#92400E',
      intro:isDE?'Adjektive beschreiben Nomen. Im Englischen stehen Adjektive <strong>vor dem Nomen</strong>. Sie verändern ihre Form nicht (kein Genus, kein Kasus).':'Adjectives describe nouns. In English, adjectives go <strong>before the noun</strong>. They do not change their form (no gender, no case).',
      rows:isDE?[
        ['Attributiv (vor Nomen)','a <strong>tall</strong> girl, an <strong>old</strong> house'],
@@ -3405,7 +4097,7 @@ function renderWortarten(){
      ],
      examples:['I have a <u>new</u> bike.','The film was <u>boring</u>.','She is <u>taller</u> than her brother.']
     },
-    {id:'adv-freq',emoji:'🔁',title:'Adverbs of Frequency',color:'#FAF5FF',border:'#C4B5FD',accent:'#5B21B6',
+    {id:'adv-freq',emoji:'🔁',title:'Adverbs of Frequency',color:'#ECFEFF',border:'#A5F3FC',accent:'#155E75',
      intro:isDE?'Diese Adverbien sagen, <strong>wie oft</strong> etwas passiert. Sie stehen meist <strong>vor dem Hauptverb</strong>, aber <strong>nach</strong> to be.':'These adverbs say <strong>how often</strong> something happens. They usually go <strong>before the main verb</strong>, but <strong>after</strong> to be.',
      rows:[
        ['always',isDE?'immer (100 %)':'always (100%)'],
@@ -3417,7 +4109,7 @@ function renderWortarten(){
      ],
      examples:['I <u>always</u> brush my teeth.','She <u>sometimes</u> watches TV.','He is <u>never</u> late.','They <u>often</u> play football at the weekend.']
     },
-    {id:'adv-time',emoji:'⏰',title:'Adverbs of Time',color:'#FFFBEB',border:'#FDE68A',accent:'#92400E',
+    {id:'adv-time',emoji:'⏰',title:'Adverbs of Time',color:'#ECFEFF',border:'#A5F3FC',accent:'#155E75',
      intro:isDE?'Zeitadverbien sagen, <strong>wann</strong> etwas passiert. Sie stehen am <strong>Satzanfang</strong> oder <strong>Satzende</strong> — nicht in der Satzmitte.':'Time adverbs say <strong>when</strong> something happens. They go at the <strong>start or end</strong> of the sentence — not in the middle.',
      rows:isDE?[
        ['Vergangenheit','yesterday, last week, two days ago, in 2020'],
@@ -3432,7 +4124,7 @@ function renderWortarten(){
      ],
      examples:['<u>Yesterday</u>, we went to the park.','She is watching TV <u>at the moment</u>.<br><em>'+(isDE?'Tipp: Zeitadverbien können auch am Satzanfang stehen: <u>Every day</u>, my sister plays the guitar.':'Tip: Time adverbs can also go at the start: <u>Every day</u>, my sister plays the guitar.')+'</em>']
     },
-    {id:'adv-manner',emoji:'🎯',title:'Adverbs of Manner',color:'#FFF1F2',border:'#FECDD3',accent:'#9F1239',
+    {id:'adv-manner',emoji:'🎯',title:'Adverbs of Manner',color:'#ECFEFF',border:'#A5F3FC',accent:'#155E75',
      intro:isDE?'Modaladverbien beschreiben, <strong>wie</strong> etwas passiert. Sie stehen meist <strong>nach dem Verb</strong> (oder nach dem Objekt). Bildung: Adjektiv + <strong>-ly</strong>.':'Adverbs of manner describe <strong>how</strong> something happens. They usually go <strong>after the verb</strong> (or after the object). Form: adjective + <strong>-ly</strong>.',
      rows:[
        ['quick → quickly',isDE?'schnell':'fast'],
@@ -3444,7 +4136,7 @@ function renderWortarten(){
      ],
      examples:['She sings <u>beautifully</u>.','He works very <u>hard</u>.','Please speak <u>slowly</u>.']
     },
-    {id:'prep',emoji:'📍',title:'Prepositions',color:'#ECFDF5',border:'#A7F3D0',accent:'#065F46',
+    {id:'prep',emoji:'📍',title:'Prepositions',color:'#F8FAFC',border:'#E2E8F0',accent:'#334155',
      intro:isDE?'Präpositionen zeigen <strong>Ort, Zeit oder Richtung</strong> an. Die wichtigsten drei für Zeit und Ort:':'Prepositions show <strong>place, time or direction</strong>. The most important ones for time and place:',
      rows:[
        ['at',isDE?'Uhrzeit, Orte (Punkt): <em>at 3 o\'clock, at school, at home</em>':'times, specific places: <em>at 3 o\'clock, at school, at home</em>'],
@@ -3456,7 +4148,7 @@ function renderWortarten(){
      ],
      examples:['I go to school <u>at</u> 7:30.','We have English <u>on</u> Tuesdays.','She lives <u>in</u> Berlin.']
     },
-    {id:'pronoun',emoji:'👤',title:'Pronouns',color:'#F5F3FF',border:'#C4B5FD',accent:'#4C1D95',
+    {id:'pronoun',emoji:'👤',title:'Pronouns',color:'#EFF6FF',border:'#BFDBFE',accent:'#1E40AF',
      intro:isDE?'Pronomen ersetzen Nomen. Im Englischen gibt es <strong>Subjekt-</strong> und <strong>Objektpronomen</strong> sowie Possessivpronomen.':'Pronouns replace nouns. In English there are <strong>subject</strong> and <strong>object pronouns</strong> as well as possessive pronouns.',
      rows:isDE?[
        ['Subjekt','I, you, he, she, it, we, they'],
@@ -3590,7 +4282,7 @@ function renderGrammarTopic(id){
       ${ohe.signal?`<div>
         <p style="font-weight:600;color:#1E293B;font-size:.82rem;margin-bottom:.35rem">${T('grammar_signals')}</p>
         <div style="display:flex;gap:.35rem;flex-wrap:wrap">
-          ${ohe.signal.map(s=>`<span style="background:#EFF6FF;color:#3B82F6;padding:.2rem .6rem;border-radius:99px;font-size:.8rem;font-weight:500">${s}</span>`).join('')}
+          ${ohe.signal.map(s=>`<span style="background:#ECFEFF;color:#0E7490;padding:.2rem .6rem;border-radius:99px;font-size:.8rem;font-weight:500">${s}</span>`).join('')}
         </div>
       </div>`:''}
       <button onclick="go('grammar-topic','${id}','rule')" class="btn-primary" style="width:100%">${T('grammar_to_rule')}</button>
@@ -3619,7 +4311,9 @@ function renderGrammarTopic(id){
           <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#F97316;border-radius:2px;margin-right:.25rem"></span>${T('legend_aux')}</span>
           <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#EF4444;border-radius:2px;margin-right:.25rem"></span>${T('legend_neg')}</span>
           <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#8B5CF6;border-radius:2px;margin-right:.25rem"></span>${T('legend_wh')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#F59E0B;border-radius:2px;margin-right:.25rem"></span>${T('legend_ending')}</span>
+          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#FDE047;border-radius:2px;margin-right:.25rem"></span>${T('legend_ending')}</span>
+          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#0891B2;border-radius:2px;margin-right:.25rem"></span>${T('legend_time')}</span>
+          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#64748B;border-radius:2px;margin-right:.25rem"></span>${T('legend_object')}</span>
         </div>
         <div style="display:flex;flex-direction:column;gap:.5rem">
           ${t.examples.map(ex=>`<div style="padding:.6rem .75rem;background:#F8FAFC;border-radius:.75rem">
@@ -3763,7 +4457,10 @@ function showLang(lang){
   document.getElementById('lang-en').style.cssText = 'font-size:.8rem;padding:.4rem .9rem';
 }
 function colorSentence(s, topicId){
-  s = s.replace(/(don't|doesn't|didn't|can't|won't|isn't|aren't|wasn't|weren't|n't)/gi,
+  // Kontraktionen trennen: Hilfsverb orange + n't rot (don't = do + n't)
+  s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could)(n't)/gi,
+    '<span style="color:#F97316;font-weight:700">$1</span><span style="color:#EF4444;font-weight:700">$2</span>');
+  s = s.replace(/(can't|won't|n't)/gi,
     '<span style="color:#EF4444;font-weight:700">$1</span>');
   s = s.replace(/\b(did|does|do|was|were|is|are|am|will|can|could|would|should|shall|must|have|has|had)\b/g,
     w => '<span style="color:#F97316;font-weight:700">'+w+'</span>');
@@ -3773,22 +4470,32 @@ function colorSentence(s, topicId){
     '<span style="color:#3B82F6;font-weight:700">$1</span>');
   if(topicId==='past'){
     s = s.replace(/(\w+)(ied)\b/g,
-      '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">ied</span>');
+      '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ied</span>');
     s = s.replace(/(\w{3,})(ed)\b/g,
-      '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">ed</span>');
+      '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ed</span>');
   }
   if(topicId==='pp'){
     s = s.replace(/(\w+)(-ing)\b/g,
-      '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">$2</span>');
+      '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
   }
   s = s.replace(/\b(play|plays|played|go|goes|went|have|has|had|read|reads|like|likes|speak|speaks|eat|eats|ate|drink|drinks|drank|watch|watches|watched|live|lives|lived|know|knew|think|thought|feel|felt|brush|brushes|listen|listens|clean|cleans|cleaned|swim|swam|write|wrote|run|ran|come|came|see|saw|make|made|get|got|take|took|give|gave|say|said|find|found|buy|bought|bring|brought|meet|met|sit|sat|sleep|slept|visit|visited|arrive|arrived|start|started|finish|finished|help|helped|move|moved|study|studied|collect|collected|train|trained)\b/g,
-    '<span style="color:#10B981;font-weight:700">$1</span>');
+    (w, base) => {
+      // Simple Present: die 3.-Person-Endung -s/-es pink hervorheben
+      if(topicId==='sp'){
+        const m = w.match(/^(\w+?)(es|s)$/);
+        if(m && m[1].length>=3) return '<span style="color:#10B981;font-weight:700">'+m[1]+'</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">'+m[2]+'</span>';
+      }
+      return '<span style="color:#10B981;font-weight:700">'+w+'</span>';
+    });
   s = s.replace(/(yesterday|last night|last week|last summer|right now|at the moment|now|tomorrow|every day|every week|always|usually|often|sometimes|never)/gi,
     '<span style="color:#0891B2;font-size:.9em">$1</span>');
   return s;
 }
 function colorExpl(s){
-  s = s.replace(/(don't|doesn't|didn't|can't|won't|isn't|aren't|wasn't|weren't|n't)/gi,
+  // Kontraktionen trennen: Hilfsverb orange + n't rot (don't = do + n't)
+  s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could)(n't)/gi,
+    '<span style="color:#F97316;font-weight:700">$1</span><span style="color:#EF4444;font-weight:700">$2</span>');
+  s = s.replace(/(can't|won't|n't)/gi,
     '<span style="color:#EF4444;font-weight:700">$1</span>');
   s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
     '<span style="color:#8B5CF6;font-weight:700">$1</span>');
@@ -3796,14 +4503,19 @@ function colorExpl(s){
   s = s.replace(/\b(do\/does|did|do|does|am\/is\/are|am|is|are|was\/were|was|were|will|have|has|had|can|could|would|should|shall|must)\b/g,
     w => '<span style="color:#F97316;font-weight:700">'+w+'</span>');
   s = s.replace(/(\w+)(ied)\b/g,
-    '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">ied</span>');
+    '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ied</span>');
   s = s.replace(/(\w{3,})(ed)\b/g,
-    '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">ed</span>');
+    '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ed</span>');
   s = s.replace(/(\w+)(-ing)\b/g,
-    '<span style="color:#10B981;font-weight:700">$1</span><span style="color:#F59E0B;font-weight:700">$2</span>');
-  s = s.replace(/going to/g, '<span style="color:#8B5CF6;font-weight:700">going to</span>');
-  s = s.replace(/(Subject|Verb|Object|Subjekt|Objekt)\b/g,
+    '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
+  s = s.replace(/going to/g, '<span style="color:#F97316;font-weight:700">going to</span>');
+  // S/V/O-Begriffe in der Farbe des jeweiligen Satzglieds (Subjekt blau, Verb grün, Objekt grau)
+  s = s.replace(/(Subject|Subjekt)\b/g,
     '<span style="background:#DBEAFE;color:#1E40AF;border-radius:3px;padding:0 3px;font-weight:700;font-size:.88em">$1</span>');
+  s = s.replace(/(Verb)\b/g,
+    '<span style="background:#D1FAE5;color:#065F46;border-radius:3px;padding:0 3px;font-weight:700;font-size:.88em">$1</span>');
+  s = s.replace(/(Object|Objekt)\b/g,
+    '<span style="background:#F1F5F9;color:#334155;border-radius:3px;padding:0 3px;font-weight:700;font-size:.88em">$1</span>');
   s = s.replace(/\b(I|You|We|They|He|She|It|he\/she\/it|I\/you\/we\/they)\b/g,
     '<span style="color:#3B82F6;font-weight:700">$1</span>');
   s = s.replace(/(yesterday|last week|last night|last summer|ago|tomorrow|next week|soon|always|usually|often|sometimes|never)/gi,
@@ -4044,6 +4756,7 @@ function renderWO(){
       <p style="font-weight:700;color:#1E293B">${isQuestion ? T('wo_question') : T('wo_prompt')}</p>
       <span style="font-size:.8rem;color:#94A3B8">${i+1}/${items.length}</span>
     </div>
+    ${isQuestion?`<div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:.6rem;padding:.5rem .75rem;font-size:.83rem;color:#92400E;font-weight:600">${T('wo_question_hint')}</div>`:''}
     ${item.hint?`<button onclick="toggleWOHint()" id="wo-hint-btn" style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#64748B;opacity:.6;padding:.1rem .3rem">💡 ${T('wo_hint')}</button><div id="wo-hint-box" style="display:none;font-size:.85rem;color:#64748B;font-style:italic;margin-top:.25rem;padding:.3rem .6rem;background:#F1F5F9;border-radius:.4rem">${item.hint}</div>`:''}
     <div class="drop-zone" id="wo-drop">
       <span style="color:#CBD5E1;font-size:.85rem" id="wo-placeholder">${T('ex_wo_placeholder')}</span>
@@ -4279,7 +4992,7 @@ let _rvt = {items:[], idx:0, score:0, flipped:false, done:false};
 function buildVocabTestItems(n){
   n = n || 20;
   const all = [];
-  VOCAB.forEach(t=>{ t.words.forEach(w=>{ all.push({word:w, topic:t.title}); }); });
+  VOCAB.forEach(t=>{ t.words.forEach(w=>{ all.push({word:w, topic:t.title, topicId:t.id}); }); });
   // shuffle
   for(let i=all.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [all[i],all[j]]=[all[j],all[i]]; }
   return all.slice(0, Math.min(n, all.length)).map(item=>{
@@ -4299,6 +5012,8 @@ function rvtFlip(){
 }
 
 function rvtAnswer(correct){
+  const cur = _rvt.items[_rvt.idx];
+  if(cur && cur.topicId) srsUpdate(cur.topicId, cur.word, correct);
   if(correct){
     _rvt.score++;
   } else {
@@ -4405,6 +5120,8 @@ function vFilterMatch(t, f){
   if(f==='soul5') return t.cat==='soul5' || (t.cat==='basics' && (t.cls===5||t.cls===0));
   if(f==='soul6') return t.cat==='soul6' || (t.cat==='basics' && (t.cls===6||t.cls===0));
   if(f==='basics') return t.cat==='basics';
+  if(f==='onlysoul5') return t.cat==='soul5';
+  if(f==='onlysoul6') return t.cat==='soul6';
   return true;
 }
 function vocabTitle(t){
@@ -4510,12 +5227,13 @@ function printIrreg(){
 
 // ===== Dictionary Skills page =====
 function renderDictSkills(){
+  const isDE = (P.lang||'en2')==='de';
   const card = (emoji, title, body) => `<div class="card" style="margin-bottom:1rem">
     <h2 style="font-size:1rem;font-weight:800;color:#1E293B;margin-bottom:.5rem">${emoji} ${title}</h2>
     <div style="font-size:.9rem;color:#475569;line-height:1.65">${body}</div>
   </div>`;
   const ex = s => `<span style="font-family:monospace;background:#F1F5F9;padding:.05rem .35rem;border-radius:.3rem">${s}</span>`;
-  const abbr = [
+  const abbr = isDE ? [
     ['Pl', 'Plural', 'mouse; <em>Pl:</em> mice'],
     ['Br', 'britisches Englisch', 'col<strong>ou</strong>r'],
     ['US', 'amerikanisches Englisch', 'col<strong>o</strong>r'],
@@ -4524,6 +5242,15 @@ function renderDictSkills(){
     ['•', 'englischer Grundwortschatz', 'collect'],
     ['↔', 'Gegenteil von', 'big ↔ small'],
     ['!', 'Achtung, aufgepasst!', 'leicht zu verwechseln']
+  ] : [
+    ['Pl', 'plural', 'mouse; <em>Pl:</em> mice'],
+    ['Br', 'British English', 'col<strong>ou</strong>r'],
+    ['US', 'American English', 'col<strong>o</strong>r'],
+    ['umg', 'informal (colloquial)', 'coke = <em>informal</em> for cola'],
+    ['*', 'irregular English verb', 'run – ran – run'],
+    ['•', 'basic English vocabulary', 'collect'],
+    ['↔', 'opposite of', 'big ↔ small'],
+    ['!', 'careful!', 'easy to mix up']
   ];
   const abbrRows = abbr.map(r=>`<tr>
     <td style="border:1px solid #E2E8F0;padding:.35rem .5rem;font-family:monospace;font-weight:700;text-align:center;white-space:nowrap">${r[0]}</td>
@@ -4533,43 +5260,47 @@ function renderDictSkills(){
   const abbrTable = `<div style="overflow-x:auto"><table style="border-collapse:collapse;width:100%;font-size:.82rem;margin-top:.4rem">
     <thead><tr>
       <th style="border:1px solid #E2E8F0;padding:.35rem .5rem;background:#F8FAFC;text-align:left">Symbol</th>
-      <th style="border:1px solid #E2E8F0;padding:.35rem .5rem;background:#F8FAFC;text-align:left">Bedeutung</th>
-      <th style="border:1px solid #E2E8F0;padding:.35rem .5rem;background:#F8FAFC;text-align:left">Beispiel</th>
+      <th style="border:1px solid #E2E8F0;padding:.35rem .5rem;background:#F8FAFC;text-align:left">${isDE?'Bedeutung':'Meaning'}</th>
+      <th style="border:1px solid #E2E8F0;padding:.35rem .5rem;background:#F8FAFC;text-align:left">${isDE?'Beispiel':'Example'}</th>
     </tr></thead><tbody>${abbrRows}</tbody></table></div>
-    <p style="font-size:.75rem;color:#94A3B8;margin-top:.4rem">Die genauen Symbole stehen vorne oder hinten in deinem Wörterbuch. Sie können je nach Verlag etwas anders aussehen.</p>`;
+    <p style="font-size:.75rem;color:#94A3B8;margin-top:.4rem">${isDE?'Die genauen Symbole stehen vorne oder hinten in deinem Wörterbuch. Sie können je nach Verlag etwas anders aussehen.':'You can find the exact symbols at the front or back of your dictionary. They can look a little different depending on the publisher.'}</p>`;
 
   return `<div class="space-y-3">
     <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
       <button onclick="go('vocabulary')" style="background:none;border:none;color:#3B82F6;cursor:pointer;font-size:.9rem">${T('irreg_back')}</button>
       <div>
-        <h1 style="font-size:1.7rem;font-weight:800;color:#1E293B">📖 ${T('dict_title')||'Wörterbucharbeit'}</h1>
-        <p style="color:#64748B;font-size:.85rem">${T('dict_page_sub')||'So nutzt du ein Wörterbuch richtig.'}</p>
+        <h1 style="font-size:1.7rem;font-weight:800;color:#1E293B">📖 ${T('dict_title')}</h1>
+        <p style="color:#64748B;font-size:.85rem">${T('dict_page_sub')}</p>
       </div>
     </div>
 
     <div class="card" style="background:#ECFEFF;border-color:#A5F3FC">
-      <p style="font-size:.88rem;color:#155E75;line-height:1.6">🏁 Stell dir ein Wörterbuch wie ein Auto vor: Wenn du weißt, wie es funktioniert, bringt es dich zuverlässig ans Ziel. Hier kommen deine Fahrstunden (aus ENG-Racers).</p>
+      <p style="font-size:.88rem;color:#155E75;line-height:1.6">🏁 ${isDE?'Stell dir ein Wörterbuch wie ein Auto vor: Wenn du weißt, wie es funktioniert, bringt es dich zuverlässig ans Ziel. Hier kommen deine Fahrstunden (aus ENG-Racers).':'Think of a dictionary like a car: if you know how it works, it will always get you where you want to go. Here are your driving lessons (from ENG-Racers).'}</p>
     </div>
 
+    ${isDE ? `
     ${card('🔁','1. Zwei Teile, zwei Richtungen', 'Ein zweisprachiges Wörterbuch hat zwei Teile: <strong>Englisch&nbsp;→&nbsp;Deutsch</strong> und <strong>Deutsch&nbsp;→&nbsp;Englisch</strong>. Du kannst also in beide Richtungen nachschlagen. Wenn du ein englisches Wort nicht kennst, suchst du im Englisch-Deutsch-Teil. Brauchst du ein englisches Wort, suchst du im Deutsch-Englisch-Teil (Rückwärtssuche).')}
-
     ${card('🔤','2. Das ABC nutzen', 'Das Wörterbuch ist nach dem Alphabet sortiert. Schau auf den <strong>ersten Buchstaben</strong>, dann den zweiten, dann den dritten.<br>Beispiel: '+ex('cat')+' kommt vor '+ex('dog')+', und '+ex('class')+' kommt vor '+ex('clean')+' (c-l-a vor c-l-e).')}
-
     ${card('🧭','3. Kolumnentitel & Stichwort', 'Oben auf jeder Seite stehen zwei Wörter, die <strong>Kolumnentitel</strong>. Sie zeigen das erste Stichwort (links oben) und das letzte Stichwort (rechts unten) der Seite. Liegt dein Wort im Alphabet dazwischen, ist es auf dieser Seite. Das <strong>Stichwort</strong> ist das fett gedruckte Wort, das du suchst. So findest du schnell, ohne jede Zeile zu lesen.')}
-
     ${card('📄','4. Aufbau einer Wörterbuchseite', 'Schau dir einen Eintrag genau an: fett das Stichwort, dann oft die <strong>Lautschrift</strong> in eckigen Klammern, die <strong>Wortart</strong> als Abkürzung und dann die Bedeutung(en). Viele Wörterbücher haben auch <strong>Info-Boxen</strong> mit Extra-Wissen.')}
-
     ${card('🏷️','5. Abkürzungen & Symbole', 'Einträge enthalten Abkürzungen und Symbole. Die wichtigsten:'+abbrTable)}
-
     ${card('🧩','6. Die Wortart erkennen', 'Die Abkürzung sagt dir die <strong>Wortart</strong>: '+ex('n')+' = Substantiv (noun), '+ex('v')+' = Verb, '+ex('adj')+' = Adjektiv, '+ex('adv')+' = Adverb. Vorsicht: Manche Wörter haben mehr als eine Wortart, z.B. '+ex('fast')+' (schnell als Adjektiv, aber auch fasten als Verb).')}
-
     ${card('🔎','7. Ein Wort, viele Bedeutungen', 'Viele Wörter haben <strong>mehrere Bedeutungen</strong>. Lies alle und wähle die, die zu deinem Satz passt.<br>Beispiel „Strom": '+ex('electricity')+' (elektrischer Strom), '+ex('current')+' (Strömung) oder '+ex('river')+' (großer Fluss). Bei <em>The radio needs electricity.</em> passt nur '+ex('electricity')+'.')}
-
     ${card('🗣️','8. Sprachstil (Stilregister)', 'Achte auf den richtigen Sprachstil. Nicht jedes Wort passt in jede Situation, genau wie zwischen „Karre" und „Auto" oder „labern" und „sprechen". '+ex('umg')+' im Wörterbuch heißt umgangssprachlich. In einer förmlichen E-Mail nimmst du besser das neutrale Wort.')}
-
     ${card('🔗','9. Phrasal Verbs nachschlagen', 'Ein <strong>phrasal verb</strong> ist ein Verb plus Zusatz (Präposition oder Adverb). Der Zusatz kann die Bedeutung völlig ändern:<br>'+ex('to look for')+' = suchen<br>'+ex('to look after')+' = sich kümmern um<br>'+ex('to look at')+' = ansehen<br>Im Wörterbuch stehen sie direkt nach dem Grundverb, oft mit dem Hinweis PHRASAL VERB.')}
-
     ${card('✅','Checkliste vor dem Aufschreiben', 'Habe ich die <strong>Grundform</strong> gesucht (Verben im Infinitiv, Nomen im Singular)? &middot; Stimmt die <strong>Wortart</strong>? &middot; Passt die <strong>Bedeutung</strong> zum Satz? &middot; Schreibe das Wort mit Übersetzung und einem Beispielsatz in deinen Hefter.')}
+    ` : `
+    ${card('🔁','1. Two parts, two directions', 'A bilingual dictionary has two parts: <strong>English&nbsp;→&nbsp;German</strong> and <strong>German&nbsp;→&nbsp;English</strong>. You can look words up in both directions. If you do not know an English word, use the English–German part. If you need an English word, use the German–English part.')}
+    ${card('🔤','2. Use the ABC', 'A dictionary is sorted alphabetically. Look at the <strong>first letter</strong>, then the second, then the third.<br>Example: '+ex('cat')+' comes before '+ex('dog')+', and '+ex('class')+' comes before '+ex('clean')+' (c-l-a before c-l-e).')}
+    ${card('🧭','3. Guide words & headword', 'At the top of every page there are two words, the <strong>guide words</strong>. They show the first headword (top left) and the last headword (bottom right) of the page. If your word comes between them in the alphabet, it is on this page. The <strong>headword</strong> is the word in bold that you are looking for.')}
+    ${card('📄','4. How a dictionary page works', 'Look closely at an entry: the headword in bold, then often the <strong>phonetics</strong> in square brackets, the <strong>word class</strong> as a short form, and then the meaning(s). Many dictionaries also have <strong>info boxes</strong> with extra facts.')}
+    ${card('🏷️','5. Short forms & symbols', 'Entries use short forms and symbols. The most important ones:'+abbrTable)}
+    ${card('🧩','6. Spot the word class', 'The short form tells you the <strong>word class</strong>: '+ex('n')+' = noun, '+ex('v')+' = verb, '+ex('adj')+' = adjective, '+ex('adv')+' = adverb. Careful: some words have more than one word class, e.g. '+ex('fast')+' (quick as an adjective, but also a verb meaning not to eat).')}
+    ${card('🔎','7. One word, many meanings', 'Many words have <strong>several meanings</strong>. Read all of them and choose the one that fits your sentence.<br>Example German „Strom": '+ex('electricity')+', '+ex('current')+' (in a river) or '+ex('river')+' (a large stream). In <em>The radio needs electricity.</em> only '+ex('electricity')+' fits.')}
+    ${card('🗣️','8. Style (register)', 'Watch out for the right style. Not every word fits every situation. '+ex('umg')+' / <em>informal</em> in the dictionary means colloquial language. In a formal email it is better to use the neutral word.')}
+    ${card('🔗','9. Looking up phrasal verbs', 'A <strong>phrasal verb</strong> is a verb plus a particle (preposition or adverb). The particle can completely change the meaning:<br>'+ex('to look for')+' = to search<br>'+ex('to look after')+' = to take care of<br>'+ex('to look at')+' = to view<br>In the dictionary they come right after the base verb, often marked PHRASAL VERB.')}
+    ${card('✅','Checklist before you write it down', 'Did I look up the <strong>base form</strong> (verbs in the infinitive, nouns in the singular)? &middot; Is the <strong>word class</strong> right? &middot; Does the <strong>meaning</strong> fit my sentence? &middot; Write the word with its translation and an example sentence in your folder.')}
+    `}
 
     <div onclick="go('vocabulary')" class="card" style="cursor:pointer;display:flex;align-items:center;gap:1rem;background:#EFF6FF;border-color:#BFDBFE">
       <span style="font-size:1.6rem">🔤</span>
@@ -4647,16 +5378,7 @@ function renderVocabList(){
     <div class="card space-y-2">
       <input id="vsearch" type="search" value="${(_vSearch||'').replace(/"/g,'&quot;')}" oninput="setVSearch(this.value)" placeholder="${T('vsearch_ph')||'Wort suchen (Englisch oder Deutsch)…'}" style="width:100%;padding:.55rem .8rem;border:1.5px solid #E2E8F0;border-radius:.7rem;font-size:.9rem;outline:none">
       <p style="font-weight:600;color:#1E293B;font-size:.9rem">Filter</p>
-      <div>${fBtn('all',T('vocab_all'))}${fBtn('soul5',T('vocab_k5'))}${fBtn('soul6',T('vocab_k6'))}${fBtn('basics',T('vocab_basics'))}</div>
-    </div>
-
-    <div onclick="go('dict-skills')" class="card" style="cursor:pointer;display:flex;align-items:center;gap:1rem;background:#ECFEFF;border-color:#A5F3FC">
-      <span style="font-size:2rem">📖</span>
-      <div style="flex:1">
-        <h3 style="font-weight:700;color:#1E293B">${T('dict_title')||'Wörterbucharbeit'}</h3>
-        <p style="font-size:.8rem;color:#64748B">${T('dict_sub')||'So findest du Wörter im Wörterbuch.'}</p>
-      </div>
-      <span style="color:#06B6D4">›</span>
+      <div>${fBtn('all',T('vocab_all'))}${fBtn('soul5',T('vocab_k5'))}${fBtn('soul6',T('vocab_k6'))}${fBtn('basics',T('vocab_basics'))}${fBtn('onlysoul5',T('vocab_onlysoul5')||'SOUL 5')}${fBtn('onlysoul6',T('vocab_onlysoul6')||'SOUL 6')}</div>
     </div>
 
     ${_q? searchHTML : `
@@ -4696,6 +5418,14 @@ function renderVocabList(){
         </div>
         <span style="color:#F97316">›</span>
       </div>
+      <div onclick="go('dict-skills')" class="card" style="cursor:pointer;display:flex;align-items:center;gap:1rem;background:#ECFEFF;border-color:#A5F3FC;margin-top:.5rem">
+        <span style="font-size:2rem">📖</span>
+        <div style="flex:1">
+          <h3 style="font-weight:700;color:#1E293B">${T('dict_title')||'Wörterbucharbeit'}</h3>
+          <p style="font-size:.8rem;color:#64748B">${T('dict_sub')||'So findest du Wörter im Wörterbuch.'}</p>
+        </div>
+        <span style="color:#06B6D4">›</span>
+      </div>
     </div>
   </div>`;
 }
@@ -4715,6 +5445,8 @@ function renderVocabTopic(id, mode){
   else if(mode==='flashcard') content = renderFlashcard(t, id);
   else if(mode==='quiz') content = renderVocabQuiz(t, id);
   else if(mode==='type') content = renderVocabType(t, id);
+  else if(mode==='listen') content = renderVocabListen(t, id);
+  else if(mode==='speak') content = renderVocabSpeak(t, id);
 
   return `<div class="space-y-5">
     <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
@@ -4729,6 +5461,8 @@ function renderVocabTopic(id, mode){
       ${tabBtn('flashcard',T('vocab_tab_fc'))}
       ${tabBtn('quiz','🧪 Quiz')}
       ${tabBtn('type',T('vocab_tab_write'))}
+      ${tabBtn('listen',T('vocab_tab_listen'))}
+      ${srAvailable()?tabBtn('speak',T('vocab_tab_speak')):''}
       <button onclick="printVocab('${id}')" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;border:none;background:#F1F5F9;color:#475569;margin-left:auto">🖨️ ${T('vocab_print')||'Drucken'}</button>
     </div>
     ${content}
@@ -4764,8 +5498,168 @@ function startVocabMode(id, mode){
     if(_vqState[id]) _vqState[id] = {};
   } else if(mode==='type'){
     if(_vtState[id]) _vtState[id] = {};
+  } else if(mode==='listen'){
+    if(_vlState[id]) _vlState[id] = {};
+  } else if(mode==='speak'){
+    if(_vsState[id]) _vsState[id] = {};
   }
   go('vocab-topic', id, mode);
+}
+
+// ═══════════════════════════════════════════════
+// DIKTAT-MODUS: Hören & Tippen (TTS spricht, Schüler schreibt)
+// ═══════════════════════════════════════════════
+let _vlState = {};
+function listenableWords(t){
+  // Für das Diktat eignen sich kurze Einträge (keine langen Classroom-Phrasen)
+  const short = t.words.filter(w=>w.en.replace(/^to\s+/,'').length<=20 && !/[?!.,]/.test(w.en));
+  return short.length>=5 ? short : t.words;
+}
+function renderVocabListen(t, id){
+  if(!_vlState[id] || !_vlState[id].active){
+    const pool = [...listenableWords(t)].sort(()=>Math.random()-.5).slice(0,12);
+    _vlState[id] = {words:pool, idx:0, score:0, checked:false, lastRight:false, val:'', done:false, active:true};
+  }
+  const qs = _vlState[id];
+  if(qs.done){
+    const pct = Math.round(qs.score/Math.max(1,qs.answered||qs.words.length)*100);
+    return `<div class="card" style="text-align:center;padding:2rem">
+      <div style="font-size:3rem">${pct>=80?'🏆':pct>=60?'👍':'💪'}</div>
+      <div style="font-size:2.2rem;font-weight:800;color:${pct>=80?'#10B981':'#3B82F6'}">${pct}%</div>
+      ${pb(pct,'#0EA5E9')}
+      <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem">
+        <button class="btn-secondary" onclick="_vlState['${id}']={};go('vocab-topic','${id}','listen')">${T('btn_try_again')}</button>
+        <button class="btn-primary" onclick="go('vocab-topic','${id}','list')">${T('vocab_to_list')}</button>
+      </div>
+    </div>`;
+  }
+  const w = qs.words[qs.idx];
+  return `<div class="card space-y-4" style="text-align:center">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;color:#94A3B8">
+      <span>${qs.idx+1}/${qs.words.length}</span><span style="color:#10B981;font-weight:600">${qs.score} ${T('ex_correct_score')}</span>
+    </div>
+    ${pb((qs.idx/qs.words.length)*100,'#0EA5E9')}
+    <p style="font-size:.85rem;color:#64748B">${T('listen_prompt')}</p>
+    <button onclick="speak('${escQ(w.en)}','en-GB')" style="font-size:2.6rem;background:#EFF6FF;border:2px solid #93C5FD;border-radius:50%;width:5rem;height:5rem;cursor:pointer" title="${T('listen_play')}">🔊</button>
+    <div>
+      <input id="vlisten-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" ${qs.checked?'disabled':''} value="${(qs.val||'').replace(/"/g,'&quot;')}"
+        onkeydown="if(event.key==='Enter'&&!_vlState['${id}'].checked)checkVocabListen('${id}')"
+        style="width:100%;max-width:20rem;border:2px solid ${qs.checked?(qs.lastRight?'#6EE7B7':'#FCA5A5'):'#E2E8F0'};border-radius:.75rem;padding:.6rem .8rem;font-size:1rem;text-align:center;outline:none;box-sizing:border-box" placeholder="${T('listen_ph')}">
+    </div>
+    ${qs.checked
+      ? `<div class="${qs.lastRight?'feedback-ok':'feedback-err'}" style="text-align:left">${qs.lastRight?T('feedback_ok'):T('feedback_wrong')+' <strong>'+w.en+'</strong>'}<br><span style="font-size:.82rem;color:#64748B">${w.de}</span></div>
+         <button class="btn-primary" onclick="nextVocabListen('${id}')">${qs.idx+1<qs.words.length?T('btn_next'):T('ex_show_result')}</button>`
+      : `<button class="btn-primary" onclick="checkVocabListen('${id}')">${T('btn_check')}</button>`}
+  </div>`;
+}
+function checkVocabListen(id){
+  const qs = _vlState[id];
+  const inp = document.getElementById('vlisten-input');
+  qs.val = inp ? inp.value.trim() : '';
+  const w = qs.words[qs.idx];
+  const target = normalizeVocab(w.en);
+  const given = normalizeVocab(qs.val);
+  const right = given===target || (given.length>0 && vocabEditDistance(target, given) <= vocabAllowedTypos(target));
+  qs.checked = true; qs.lastRight = right;
+  qs.answered = (qs.answered||0)+1;
+  if(right) qs.score++;
+  srsUpdate(id, w, right);
+  go('vocab-topic', id, 'listen');
+}
+function nextVocabListen(id){
+  const qs = _vlState[id];
+  if(!qs.lastRight) qs.words.push(qs.words[qs.idx]);
+  qs.idx++; qs.checked=false; qs.val='';
+  if(qs.idx >= qs.words.length){ qs.done = true; addXP(15); checkBadges(); save(); }
+  go('vocab-topic', id, 'listen');
+  setTimeout(()=>{ const i=document.getElementById('vlisten-input'); if(i) i.focus(); },0);
+}
+
+// ═══════════════════════════════════════════════
+// AUSSPRACHE-TRAINING (Web Speech Recognition, Chrome/Edge)
+// ═══════════════════════════════════════════════
+function srAvailable(){ return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+let _vsState = {};
+let _srInstance = null;
+function renderVocabSpeak(t, id){
+  if(!srAvailable()){
+    return `<div class="card" style="text-align:center;padding:2rem"><p style="font-size:2rem">🎤</p><p style="color:#64748B;font-size:.9rem">${T('speak_not_supported')}</p></div>`;
+  }
+  if(!_vsState[id] || !_vsState[id].active){
+    const pool = [...listenableWords(t)].sort(()=>Math.random()-.5).slice(0,10);
+    _vsState[id] = {words:pool, idx:0, score:0, done:false, listening:false, heard:'', result:null, active:true};
+  }
+  const qs = _vsState[id];
+  if(qs.done){
+    const pct = Math.round(qs.score/Math.max(1,qs.words.length)*100);
+    return `<div class="card" style="text-align:center;padding:2rem">
+      <div style="font-size:3rem">${pct>=80?'🏆':pct>=60?'👍':'💪'}</div>
+      <div style="font-size:2.2rem;font-weight:800;color:${pct>=80?'#10B981':'#3B82F6'}">${qs.score}/${qs.words.length}</div>
+      ${pb(pct,'#8B5CF6')}
+      <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1rem">
+        <button class="btn-secondary" onclick="_vsState['${id}']={};go('vocab-topic','${id}','speak')">${T('btn_try_again')}</button>
+        <button class="btn-primary" onclick="go('vocab-topic','${id}','list')">${T('vocab_to_list')}</button>
+      </div>
+    </div>`;
+  }
+  const w = qs.words[qs.idx];
+  return `<div class="card space-y-4" style="text-align:center">
+    <div style="display:flex;justify-content:space-between;font-size:.85rem;color:#94A3B8">
+      <span>${qs.idx+1}/${qs.words.length}</span><span style="color:#10B981;font-weight:600">${qs.score} ${T('ex_correct_score')}</span>
+    </div>
+    ${pb((qs.idx/qs.words.length)*100,'#8B5CF6')}
+    <p style="font-size:.85rem;color:#64748B">${T('speak_prompt')}</p>
+    <p style="font-size:1.5rem;font-weight:800;color:#1E293B">${w.en} ${speakBtn(escQ(w.en))}</p>
+    <p style="font-size:.85rem;color:#94A3B8">${w.de}</p>
+    <button id="vs-mic" onclick="startSpeakCheck('${id}')" ${qs.listening?'disabled':''}
+      style="font-size:2.4rem;background:${qs.listening?'#FEE2E2':'#F5F3FF'};border:2px solid ${qs.listening?'#F87171':'#C4B5FD'};border-radius:50%;width:5rem;height:5rem;cursor:pointer">${qs.listening?'⏺️':'🎤'}</button>
+    <p style="font-size:.78rem;color:#94A3B8">${qs.listening?T('speak_listening'):T('speak_tap_mic')}</p>
+    ${qs.result!==null ? `<div class="${qs.result?'feedback-ok':'feedback-info'}" style="text-align:left">
+        ${qs.result?T('speak_great'):T('speak_heard')+' „'+(qs.heard||'–')+'“ – '+T('speak_try_again')}
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:center">
+        ${!qs.result?`<button class="btn-secondary" onclick="startSpeakCheck('${id}')">🎤 ${T('btn_try_again')}</button>`:''}
+        <button class="btn-primary" onclick="nextVocabSpeak('${id}')">${qs.idx+1<qs.words.length?T('btn_next'):T('ex_show_result')}</button>
+      </div>` : ''}
+  </div>`;
+}
+function startSpeakCheck(id){
+  const qs = _vsState[id];
+  if(qs.listening) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  try{ if(_srInstance) _srInstance.abort(); }catch(e){}
+  const rec = new SR();
+  _srInstance = rec;
+  rec.lang = 'en-GB'; rec.interimResults = false; rec.maxAlternatives = 5;
+  qs.listening = true; qs.result = null; qs.heard = '';
+  go('vocab-topic', id, 'speak');
+  const target = normalizeVocab(qs.words[qs.idx].en);
+  rec.onresult = (e)=>{
+    const alts = Array.from(e.results[0]).map(r=>normalizeVocab(r.transcript||''));
+    qs.heard = (e.results[0][0].transcript||'').trim();
+    const tol = vocabAllowedTypos(target);
+    const hit = alts.some(a => a===target || a.includes(target) || target.includes(a) && a.length>2 || vocabEditDistance(target,a)<=tol);
+    qs.listening = false;
+    if(qs.result===null){ if(hit) qs.score++; qs.result = hit; }
+    if(hit) srsUpdate(id, qs.words[qs.idx], true);
+    go('vocab-topic', id, 'speak');
+  };
+  rec.onerror = (e)=>{
+    qs.listening = false;
+    qs.result = false;
+    qs.heard = e.error==='not-allowed' ? T('speak_mic_denied') : '';
+    go('vocab-topic', id, 'speak');
+  };
+  rec.onend = ()=>{
+    if(qs.listening){ qs.listening=false; if(qs.result===null){ qs.result=false; } go('vocab-topic', id, 'speak'); }
+  };
+  try{ rec.start(); }catch(e){ qs.listening=false; }
+}
+function nextVocabSpeak(id){
+  const qs = _vsState[id];
+  qs.idx++; qs.result=null; qs.heard='';
+  if(qs.idx >= qs.words.length){ qs.done = true; addXP(15); checkBadges(); save(); }
+  go('vocab-topic', id, 'speak');
 }
 
 function renderVocabList2(t, known, id){
@@ -4934,7 +5828,13 @@ function renderVocabQuiz(t, id){
   const qs = _vqState[id];
   if(qs.done) return renderVocabQuizDone(t, id);
   const w = qs.words[qs.idx];
-  const wrong = t.words.filter(x=>x.en!==w.en).sort(()=>Math.random()-.5).slice(0,3);
+  // Falsche Optionen: keine doppelten deutschen Übersetzungen zulassen
+  // (manche Themen haben Synonyme mit gleicher Übersetzung)
+  const seenDe = new Set([w.de]);
+  const wrong = [...t.words].sort(()=>Math.random()-.5).filter(x=>{
+    if(x.en===w.en || seenDe.has(x.de)) return false;
+    seenDe.add(x.de); return true;
+  }).slice(0,3);
   const opts = [...wrong, w].sort(()=>Math.random()-.5);
 
   return `<div class="card space-y-5">
@@ -4965,6 +5865,7 @@ function pickVQ(oi, chosen, correct){
   const qs = _vqState[_state.sub];
   if(isRight) qs.score++;
   qs.answers.push({chosen,correct,right:isRight});
+  srsUpdate(_state.sub, qs.words[qs.idx], isRight);
   const fb = document.getElementById('vq-feedback');
   fb.innerHTML = (isRight?`<div class="feedback-ok">${T('feedback_ok')}</div>`:`<div class="feedback-err">${T('feedback_wrong')} <strong>${correct}</strong></div>`)
     + `<button class="btn-primary" style="margin-top:.75rem" onclick="nextVQ()">${T('btn_next')}</button>`;
@@ -5100,8 +6001,10 @@ function checkVocabType(id, correct){
   const alts = (w && w.alts) ? w.alts : [];
   // build list of accepted answers: correct + alts
   const accepted = [correct, ...alts].map(a=>normalizeVocab(a));
-  // fuzzy: val is contained in correct (for multi-word answers where student types partial)
-  const fuzzyOk = accepted.some(a => a.includes(normVal) && normVal.length > 2);
+  // fuzzy: bei mehrteiligen Antworten reicht ein ganzes Wort der Lösung
+  // (Wortgrenzen-Prüfung – sonst würden beliebige Buchstabenfolgen wie
+  // "wes" für "Schwester" akzeptiert)
+  const fuzzyOk = accepted.some(a => normVal.length > 2 && a !== normVal && (' '+a+' ').includes(' '+normVal+' '));
   const exactOk = accepted.some(a => a === normVal);
   // typo tolerance: accept small edit distance, scaled to word length
   let typoOk = false;
@@ -5113,6 +6016,7 @@ function checkVocabType(id, correct){
   _vtState[id].lastRight = isRight;
   _vtState[id].lastTypo = (typoOk && !exactOk && !fuzzyOk);
   if(isRight) _vtState[id].score++;
+  if(w) srsUpdate(id, w, isRight);
   go('vocab-topic', id, 'type');
 }
 
@@ -5924,8 +6828,9 @@ function saveWPText(){
     fb.innerHTML = '<div class="feedback-err"><strong>'+T('writing_check_now')+'</strong> '+checks.join(' · ')+'</div>';
     fb.style.display='block'; return;
   }
-  if(!P.writing.includes('prompt-free')) P.writing.push('prompt-free');
-  addXP(30); checkBadges(); save();
+  const firstFreeWriting = !P.writing.includes('prompt-free');
+  if(firstFreeWriting){ P.writing.push('prompt-free'); addXP(30); }
+  checkBadges(); save();
   if(fb){ fb.innerHTML='<div class="feedback-ok">✓ '+T('ex_result_good')+'</div>'; fb.style.display='block'; }
 }
 
@@ -6085,18 +6990,6 @@ function renderWritingList(){
       <button onclick="go('writing-prompts')" style="background:linear-gradient(135deg,#EC4899,#8B5CF6);color:#fff;border:none;border-radius:.75rem;padding:.65rem 1.25rem;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(236,72,153,.35)">${T('writing_free_btn')}</button>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem;margin-bottom:.5rem">
-      <div onclick="go('writing-haiku')" class="card" style="cursor:pointer;background:linear-gradient(135deg,#FFF9C4,#FEF3C7);border-color:#FDE68A;padding:1rem">
-        <div style="font-size:1.8rem;margin-bottom:.3rem">🌸</div>
-        <h3 style="font-weight:700;color:#92400E;font-size:.9rem;margin-bottom:.2rem">${T('writing_haiku_create')}</h3>
-        <p style="font-size:.78rem;color:#B45309">${T('writing_haiku_sub')}</p>
-      </div>
-      <div onclick="go('writing-acrostic')" class="card" style="cursor:pointer;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-color:#FDE68A;padding:1rem">
-        <div style="font-size:1.8rem;margin-bottom:.3rem">🔤</div>
-        <h3 style="font-weight:700;color:#92400E;font-size:.9rem;margin-bottom:.2rem">${T('writing_acrostic_create')}</h3>
-        <p style="font-size:.78rem;color:#B45309">${T('writing_acrostic_sub')}</p>
-      </div>
-    </div>
     <h2 style="font-size:1rem;font-weight:700;color:#475569">${T('writing_tasks_heading')}</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem">
       ${WRITING.map(t=>{
@@ -6147,6 +7040,21 @@ function renderWritingList(){
             </div>
           </div>
         </details>`;}).join('')}
+    </div>
+
+    <h2 style="font-size:1rem;font-weight:700;color:#475569;margin-top:.5rem">${T('writing_creative_heading')||'Kreativ-Ecke'}</h2>
+    <p style="font-size:.82rem;color:#94A3B8;margin-top:-.4rem">${T('writing_creative_sub')||'Zum Ausprobieren, wenn du Lust hast.'}</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.6rem">
+      <div onclick="go('writing-haiku')" class="card" style="cursor:pointer;background:#fff;border-color:#FDE68A;padding:.85rem">
+        <div style="font-size:1.5rem;margin-bottom:.2rem">🌸</div>
+        <h3 style="font-weight:700;color:#92400E;font-size:.88rem;margin-bottom:.15rem">${T('writing_haiku_create')}</h3>
+        <p style="font-size:.76rem;color:#B45309">${T('writing_haiku_sub')}</p>
+      </div>
+      <div onclick="go('writing-acrostic')" class="card" style="cursor:pointer;background:#fff;border-color:#FDE68A;padding:.85rem">
+        <div style="font-size:1.5rem;margin-bottom:.2rem">🔤</div>
+        <h3 style="font-weight:700;color:#92400E;font-size:.88rem;margin-bottom:.15rem">${T('writing_acrostic_create')}</h3>
+        <p style="font-size:.76rem;color:#B45309">${T('writing_acrostic_sub')}</p>
+      </div>
     </div>
   </div>`;
 }
@@ -6244,7 +7152,14 @@ function renderWritingTask(id){
     ${!done ? `<div id="writing-feedback" style="display:none"></div>
     <div style="display:flex;gap:.75rem;flex-wrap:wrap">
       <button class="btn-primary" style="background:#EC4899;flex:1;min-width:10rem" onclick="submitWritingCheck('${id}')">${enough?T('writing_check_save'):T('writing_too_few_words')+' ('+(t.min-words)+')'}</button>
-      <button class="btn-secondary" style="flex:1;min-width:10rem;border-color:#EC4899;color:#EC4899" ${!_wState.name.trim()||!(P.teacherEmail||'').trim()?`disabled title="${T('writing_teacher_required')}"`:''} onclick="mailWriting('${id}')">${T('writing_send_teacher')}</button>
+      ${(()=>{
+        const cl = wChecklist(t);
+        const clDone = cl.length===0 || cl.every((_,ci)=>_wState.checklist[ci]);
+        const missing = !_wState.name.trim()||!(P.teacherEmail||'').trim();
+        const disabled = !clDone || missing;
+        return `<button class="btn-secondary" style="flex:1;min-width:10rem;border-color:#EC4899;color:#EC4899" ${disabled?`disabled title="${!clDone?T('writing_checklist_gate'):T('writing_teacher_required')}"`:''} onclick="mailWriting('${id}')">${T('writing_send_teacher')}</button>
+        ${!clDone?`<p style="flex-basis:100%;font-size:.8rem;color:#B45309;background:#FFFBEB;border:1px solid #FDE68A;border-radius:.5rem;padding:.5rem .75rem;margin:0">☑️ ${T('writing_checklist_gate')}</p>`:''}`;
+      })()}
     </div>
     <div id="mail-fallback-${id}" style="display:none;background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:.75rem;padding:.9rem 1rem;margin-top:.25rem">
       <p style="font-size:.85rem;font-weight:600;color:#92400E;margin-bottom:.5rem">${T('writing_mail_fallback_hint')}</p>
@@ -6352,11 +7267,15 @@ function submitWriting(id){
       fb.style.display='block';
     }
   }
-  if(!P.writing.includes(id)) P.writing.push(id);
+  // XP nur beim ersten Abschluss der Aufgabe – sonst lässt sich durch
+  // wiederholtes Abgeben desselben Textes XP sammeln.
+  const firstCompletion = !P.writing.includes(id);
+  if(firstCompletion) P.writing.push(id);
   // Save submitted text + keywords for review
   const foundKws = (WRITING_KEYWORDS[id]||[]).filter(k=>(_wState.text||'').toLowerCase().includes(k));
   _wState.keywords = foundKws;
-  addXP(30); checkBadges(); save();
+  if(firstCompletion) addXP(30);
+  checkBadges(); save();
   go('writing-task',id);
 }
 
@@ -6818,8 +7737,10 @@ function memFlip(cardId){
         s.duration = s.startTime ? Math.round((Date.now()-s.startTime)/1000) : null;
         if(!P.gameStats) P.gameStats={hangman:[],memory:[],qf:[],wordsearch:[]};
         if(!P.gameStats.memory) P.gameStats.memory=[];
+        const _prevM=(P.gameStats.memory||[]); const _isRecM=_prevM.length>0 && s.moves < Math.min(..._prevM.map(g=>g.moves||9999));
         const now=new Date(); P.gameStats.memory.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),moves:s.moves,duration:s.duration,topic:s.topicId});
         if(P.gameStats.memory.length>20) P.gameStats.memory.pop(); save();
+        if(_isRecM && typeof showToast==='function') showToast('🏆 '+(T('record_new')||'Neuer Rekord!'));
       }
     }
     else { setTimeout(()=>{ s.flipped=[]; document.getElementById('app').innerHTML=render(_state); },900); }
@@ -6848,8 +7769,16 @@ function startIrregMemory(mode){
 
 function fmtGameDate(e){ return e.date+(e.time?' '+e.time:''); }
 function memLeaderboard(type){
-  const entries = (P.gameStats&&P.gameStats[type])||[];
-  if(!entries.length) return '';
+  const raw = (P.gameStats&&P.gameStats[type])||[];
+  if(!raw.length) return '';
+  // Echte Bestenliste: nach Leistung sortieren, nicht nach Datum
+  const entries = [...raw].sort((a,b)=>{
+    if(type==='memory')     return (a.moves||9999)-(b.moves||9999) || (a.duration||9999)-(b.duration||9999);
+    if(type==='qf')         return (b.score||0)-(a.score||0) || (b.pct||0)-(a.pct||0);
+    if(type==='hangman')    return (b.won?1:0)-(a.won?1:0) || (a.duration||9999)-(b.duration||9999);
+    if(type==='wordsearch') return (b.found||0)-(a.found||0) || (a.duration||9999)-(b.duration||9999);
+    return 0;
+  });
   const rows = entries.slice(0,5).map((e,i)=>{
     let detail='';
     if(type==='memory') detail=`${e.moves} ${T('mem_moves')}${e.duration?' · '+e.duration+'s':''}`;
@@ -6918,7 +7847,7 @@ function renderWAQuiz(){
   const isRight = answered && s.chosen === q.ans;
   return `<div class="space-y-5">
     <div style="display:flex;align-items:center;gap:1rem">
-      <button onclick="go('grammar-wortarten')" style="background:none;border:none;color:#3B82F6;cursor:pointer">← Wortarten</button>
+      <button onclick="go('grammar-wortarten')" style="background:none;border:none;color:#3B82F6;cursor:pointer">${T('wa_back')}</button>
       <h1 style="font-size:1.3rem;font-weight:800;color:#1E293B">${T('wa_title')}</h1>
       <span style="margin-left:auto;font-size:.85rem;color:#64748B">${s.idx+1}/${s.shuffled.length}</span>
     </div>
@@ -7230,15 +8159,21 @@ function renderQFDone(topicId){
   const s = _qfState;
   const total = s.answered;
   const pct = total>0 ? Math.round(s.score/total*100) : 0;
-  // Update best score
+  // Update best score – nur einmal pro Runde speichern (die Seite kann
+  // z.B. beim Sprachwechsel neu gerendert werden, sonst doppelte Einträge).
   if(!P.qfBest) P.qfBest={};
   const prev = P.qfBest[topicId];
-  const isNewBest = !prev || s.score > prev.score;
-  if(isNewBest) P.qfBest[topicId]={score:s.score,total,pct};
-  if(!P.gameStats) P.gameStats={hangman:[],memory:[],qf:[],wordsearch:[]};
-  if(!P.gameStats.qf) P.gameStats.qf=[];
-  if(total>0){ const now=new Date(); P.gameStats.qf.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),score:s.score,pct,answered:total,topic:topicId}); if(P.gameStats.qf.length>20) P.gameStats.qf.pop(); }
-  save();
+  const isNewBest = s._logged ? !!s._wasNewBest : (!prev || s.score > prev.score);
+  if(!s._logged){
+    s._logged = true;
+    s._wasNewBest = isNewBest;
+    if(isNewBest) P.qfBest[topicId]={score:s.score,total,pct};
+    if(isNewBest && prev && typeof showToast==='function'){ showToast('🏆 '+(T('record_new')||'Neuer Rekord!')); }
+    if(!P.gameStats) P.gameStats={hangman:[],memory:[],qf:[],wordsearch:[]};
+    if(!P.gameStats.qf) P.gameStats.qf=[];
+    if(total>0){ const now=new Date(); P.gameStats.qf.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),score:s.score,pct,answered:total,topic:topicId}); if(P.gameStats.qf.length>20) P.gameStats.qf.pop(); }
+    save();
+  }
 
   // Overview table of answered questions
   const histHTML = s.history.length ? `
@@ -7670,8 +8605,34 @@ function setPFilter(key, val){
 // ═══════════════════════════════════════════════
 // LERNWEG
 // ═══════════════════════════════════════════════
+// ── BACKUP-ERINNERUNG ──
+// Alle 3 Wochen sanft an den Export erinnern (localStorage kann z.B.
+// auf iPhones gelöscht werden, wenn die App nicht installiert ist).
+function backupNudgeHTML(){
+  if((P.xp||0) < 100) return '';
+  const today = new Date().toISOString().slice(0,10);
+  const last = P.lastBackup || P.backupNudge || '';
+  if(last && (new Date(today) - new Date(last)) < 21*86400000) return '';
+  return `<div class="card" id="backup-nudge" style="background:#FFFBEB;border-color:#FDE68A;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+    <div style="font-size:1.6rem">💾</div>
+    <div style="flex:1;min-width:12rem">
+      <p style="font-weight:700;color:#92400E;font-size:.92rem">${T('backup_nudge_title')}</p>
+      <p style="font-size:.8rem;color:#B45309">${T('backup_nudge_sub')}</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn-primary" style="background:#F59E0B" onclick="exportProgress();snoozeBackupNudge()">${T('backup_nudge_btn')}</button>
+      <button class="btn-secondary" style="border-color:#FDE68A;color:#92400E" onclick="snoozeBackupNudge()">${T('backup_nudge_later')}</button>
+    </div>
+  </div>`;
+}
+function snoozeBackupNudge(){
+  P.backupNudge = new Date().toISOString().slice(0,10); save();
+  const el = document.getElementById('backup-nudge'); if(el) el.remove();
+}
+
 function exportProgress(){
   try{
+    P.lastBackup = new Date().toISOString().slice(0,10); save();
     const data = JSON.stringify(P);
     const blob = new Blob([data], {type:'application/json'});
     const url = URL.createObjectURL(blob);
@@ -7719,7 +8680,7 @@ function renderLernweg(){
     const earned = evalBadge(b.id);
     return `<div class="badge-box ${earned?'badge-earned':'badge-locked'}" style="min-width:0">
       <div style="font-size:1.8rem">${b.emoji}</div>
-      <p style="font-weight:700;font-size:.8rem;color:#1E293B;margin:.3rem 0">${b.title}</p>
+      <p style="font-weight:700;font-size:.8rem;color:#1E293B;margin:.3rem 0">${(P.lang||'en2')==='de'?b.title:(b.titleEN||b.title)}</p>
       <p style="font-size:.7rem;color:#64748B">${(P.lang||'en2')==='de'?b.descDE:b.descEN}</p>
     </div>`;
   }).join('');
@@ -7727,6 +8688,86 @@ function renderLernweg(){
   return `<div class="space-y-8">
     <div><h1 style="font-size:1.8rem;font-weight:800;color:#1E293B">${T('lernweg_title')}</h1>
     <p style="color:#64748B;margin-top:.3rem">${T('lernweg_sub')}</p></div>
+
+    <div class="card" style="display:flex;align-items:center;gap:1rem;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border-color:#C4B5FD">
+      <div style="font-size:2rem">🚀</div>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:800;color:#1E293B">${T('home_level')||'Level'} ${levelInfo().level} · ${P.xp||0} XP</p>
+        <div style="margin-top:.35rem">${pb(levelInfo().pct,'#8B5CF6')}</div>
+      </div>
+      ${currentStreak()>=1?`<div style="text-align:center"><div style="font-size:1.4rem">🔥</div><div style="font-weight:800;color:#1E293B">${currentStreak()}</div></div>`:''}
+    </div>
+
+    ${(()=>{ // Wochenrückblick
+      const w = weekStats();
+      return `<div class="card" style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+        <div style="font-size:1.8rem">📅</div>
+        <div style="flex:1;min-width:10rem">
+          <p style="font-weight:800;color:#1E293B;font-size:.95rem">${T('week_review_title')}</p>
+          <p style="font-size:.85rem;color:#64748B">${w.xp} XP · ${w.days} ${T('week_review_days')}</p>
+        </div>
+        <div style="display:flex;gap:.3rem;align-items:flex-end;height:2.6rem">
+          ${[6,5,4,3,2,1,0].map(i=>{
+            const d = new Date(Date.now()-i*86400000).toISOString().slice(0,10);
+            const v = (P.xpLog||{})[d]||0;
+            const h = Math.min(100, v/DAILY_GOAL*100);
+            return `<div title="${d}: ${v} XP" style="width:.75rem;height:${Math.max(8,h)}%;background:${v>0?'#10B981':'#E2E8F0'};border-radius:2px"></div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    })()}
+
+    ${(()=>{ // Sprach-Check: letzter Stand + Entwicklung + Wiederholen
+      const as = P.assessments||[];
+      const last = as[as.length-1];
+      const prev = as.length>1 ? as[as.length-2] : null;
+      const topicRows = last ? GRAMMAR.map(t=>{
+        const r = last.perTopic[t.id]; if(!r||!r.total) return '';
+        const tp = Math.round(r.right/r.total*100);
+        let trend = '';
+        if(prev && prev.perTopic[t.id] && prev.perTopic[t.id].total){
+          const pp = Math.round(prev.perTopic[t.id].right/prev.perTopic[t.id].total*100);
+          trend = tp>pp ? ' <span style="color:#059669;font-weight:700">▲</span>' : tp<pp ? ' <span style="color:#DC2626;font-weight:700">▼</span>' : ' <span style="color:#94A3B8">▬</span>';
+        }
+        return `<div style="margin-bottom:.4rem">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.1rem">
+            <span style="color:#334155;font-weight:600">${t.title}${trend}</span>
+            <span style="color:${tp>=60?'#059669':'#D97706'};font-weight:700">${tp}%</span>
+          </div>${pb(tp, tp>=60?'#10B981':'#F59E0B')}</div>`;
+      }).join('') : '';
+      const historyLine = as.length>1 ? `<p style="font-size:.75rem;color:#94A3B8;margin-top:.5rem">${T('ob_history_label')} ${as.map(a=>`${a.date.slice(5)}: <strong>${a.pct}%</strong>`).join(' → ')}</p>` : '';
+      return `<div class="card space-y-3" style="background:linear-gradient(135deg,#F5F3FF,#FAF5FF);border-color:#C4B5FD">
+        <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+          <span style="font-size:1.6rem">🧭</span>
+          <h2 style="font-weight:700;color:#1E293B;flex:1">${T('ob_check_title')}</h2>
+          <button class="btn-primary" style="background:#7C3AED" onclick="startOnboarding('check')">${last?T('ob_check_repeat'):T('ob_check_do')}</button>
+        </div>
+        ${last ? `<p style="font-size:.8rem;color:#6D28D9">${T('ob_last_check')} ${last.date} · <strong>${last.pct}%</strong>${prev?` (${T('ob_prev_check')} ${prev.pct}%)`:''}</p>
+        <div>${topicRows}</div>${historyLine}` : `<p style="font-size:.85rem;color:#6D28D9">${T('ob_check_none')}</p>`}
+      </div>`;
+    })()}
+
+    ${(()=>{ // Level-Roadmap: was kommt in den nächsten Leveln?
+      const lv = levelInfo();
+      const milestones = [];
+      AVATAR_TIERS.filter(t=>t.lvl>1).forEach(t=>milestones.push({lvl:t.lvl, label:t.list.join(' ')}));
+      milestones.push({lvl:4, label:'🏅 ' + T('roadmap_badge_lvl5')});
+      milestones.sort((a,b)=>a.lvl-b.lvl);
+      const rows = milestones.map(m=>{
+        const reached = lv.level >= m.lvl;
+        const xpNeeded = (m.lvl-1)*XP_PER_LEVEL;
+        return `<div style="display:flex;align-items:center;gap:.75rem;padding:.4rem 0;border-bottom:1px solid #F1F5F9;${reached?'':'opacity:.75'}">
+          <span style="font-size:.78rem;font-weight:800;color:${reached?'#059669':'#64748B'};min-width:4.2rem">${reached?'✅':'🔒'} ${T('home_level')||'Level'} ${m.lvl}</span>
+          <span style="flex:1;font-size:.95rem">${m.label}</span>
+          <span style="font-size:.72rem;color:#94A3B8;white-space:nowrap">${reached?'':xpNeeded+' XP'}</span>
+        </div>`;
+      }).join('');
+      return `<div class="card space-y-2">
+        <h2 style="font-weight:700;color:#1E293B">🗺️ ${T('roadmap_title')}</h2>
+        <p style="font-size:.8rem;color:#64748B">${T('roadmap_sub').replace('{xp}', String(lv.need - lv.inLevel)).replace('{next}', String(lv.level+1))}</p>
+        ${rows}
+      </div>`;
+    })()}
 
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem">
       ${[
@@ -7740,6 +8781,28 @@ function renderLernweg(){
         <p style="font-size:.75rem;color:#94A3B8;margin-bottom:.4rem">${s.label}</p>
         ${pb(s.val/s.tot*100,s.c)}
       </div>`).join('')}
+    </div>
+
+    <div class="card space-y-3">
+      <h2 style="font-weight:700;color:#1E293B">${T('lernweg_games_heading')}</h2>
+      ${(()=>{
+        const g=P.gameStats||{};
+        const hm=g.hangman||[], me=g.memory||[], qf=g.qf||[], ws=g.wordsearch||[];
+        const total=hm.length+me.length+qf.length+ws.length;
+        if(!total) return `<p style="font-size:.85rem;color:#94A3B8">${T('lernweg_games_none')}</p>`;
+        const hmWon=hm.filter(x=>x.won).length;
+        const qfBest=qf.length?Math.max(...qf.map(x=>x.pct||0)):0;
+        const meBest=me.length?Math.min(...me.map(x=>x.moves||9999)):0;
+        const row=(emoji,name,info)=>`<div style="display:flex;align-items:center;gap:.75rem;padding:.45rem .15rem;border-bottom:1px solid #F1F5F9">
+          <span style="font-size:1.3rem">${emoji}</span>
+          <span style="flex:1;font-weight:600;color:#1E293B;font-size:.88rem">${name}</span>
+          <span style="font-size:.8rem;color:#64748B;text-align:right">${info}</span></div>`;
+        return row('🎯','Hangman', hm.length?(hm.length+'× · '+hmWon+' '+T('lernweg_games_won')):'–')
+          + row('🃏','Memory', me.length?(me.length+'× · '+T('lernweg_games_best')+' '+meBest+' '+T('lernweg_games_moves')):'–')
+          + row('⚡','Quick-Fire', qf.length?(qf.length+'× · '+T('lernweg_games_best')+' '+qfBest+'%'):'–')
+          + row('🔎','Wordsearch', ws.length?(ws.length+'×'):'–');
+      })()}
+      <button onclick="go('spiele')" class="btn-secondary" style="width:100%;margin-top:.4rem">${T('nav_games')} ›</button>
     </div>
 
     <div class="card space-y-4">
@@ -7817,11 +8880,11 @@ function renderLernweg(){
       ${pb((P.irreg||[]).length/30*100,'#F59E0B')}
     </div>
 
-    ${P.streak>0?`<div class="card" style="background:#FFF7ED;border-color:#FED7AA;display:flex;align-items:center;gap:1rem">
+    ${currentStreak()>0?`<div class="card" style="background:#FFF7ED;border-color:#FED7AA;display:flex;align-items:center;gap:1rem">
       <span style="font-size:2.5rem">🔥</span>
       <div>
-        <p style="font-weight:700;color:#92400E">${P.streak}${T('lernweg_streak_days_post')}</p>
-        <p style="font-size:.85rem;color:#C2410C">${P.streak===1?T('lernweg_streak_start'):T('lernweg_streak_cont_pre')+P.streak+T('lernweg_streak_cont_post')}</p>
+        <p style="font-weight:700;color:#92400E">${currentStreak()}${T('lernweg_streak_days_post')}</p>
+        <p style="font-size:.85rem;color:#C2410C">${currentStreak()===1?T('lernweg_streak_start'):T('lernweg_streak_cont_pre')+currentStreak()+T('lernweg_streak_cont_post')}</p>
       </div>
     </div>`:''}
 
@@ -7931,11 +8994,17 @@ function evalBadge(id){
     case 'writing-explorer': return P.writing.length>=1;
     case 'irreg-champ': return (P.irreg||[]).length>=20;
     case 'simple-past-master': return !!(P.grammar['past']&&P.grammar['past'].completed);
-    case 'streak-3': return P.streak>=3;
+    case 'streak-3': return currentStreak()>=3;
     case 'all-rounder': {
       const gs2=grammarStats();
       return gs2.done>=1&&Object.values(P.vocab).some(v=>v.tested)&&P.reading.length>=1&&P.writing.length>=1;
     }
+    case 'streak-7': return currentStreak()>=7;
+    case 'streak-30': return currentStreak()>=30;
+    case 'first-game': return ['hangman','memory','qf','wordsearch'].some(k=>((P.gameStats||{})[k]||[]).length>0);
+    case 'game-master': return ['hangman','memory','qf','wordsearch'].reduce((a,k)=>a+(((P.gameStats||{})[k]||[]).length),0)>=10;
+    case 'word-collector': return VOCAB.reduce((s,t)=>s+(((P.vocab[t.id]||{}).known)||[]).length,0)>=100;
+    case 'level-5': return (P.xp||0)>=400;
     default: return false;
   }
 }
@@ -8063,13 +9132,24 @@ function renderVersionBadge(){
   document.body.appendChild(b);
 }
 
-function changelogHTML(){
-  return CHANGELOG.map(e=>`<div style="margin-bottom:.6rem">
+function changelogEntryHTML(e){
+  return `<div style="margin-bottom:.6rem">
     <p style="font-weight:700;color:#1E293B;font-size:.85rem">Beta ${e.v}${e.date?` <span style="color:#94A3B8;font-weight:500">· ${e.date}</span>`:''}</p>
     <ul style="margin:.2rem 0 0 1.1rem;padding:0">
       ${e.items.map(it=>`<li style="font-size:.82rem;color:#475569;line-height:1.5">${it}</li>`).join('')}
     </ul>
-  </div>`).join('');
+  </div>`;
+}
+// Nur die neueste Version direkt zeigen, ältere hinter einem Aufklapper –
+// sonst wird das Fenster zu lang.
+function changelogHTML(){
+  const latest = CHANGELOG[0] ? changelogEntryHTML(CHANGELOG[0]) : '';
+  const older = CHANGELOG.slice(1);
+  const olderHTML = older.length ? `<details style="margin-top:.4rem">
+    <summary style="cursor:pointer;font-size:.78rem;font-weight:600;color:#3B82F6">${T('version_older')}</summary>
+    <div style="margin-top:.5rem">${older.map(changelogEntryHTML).join('')}</div>
+  </details>` : '';
+  return latest + olderHTML;
 }
 
 function showUpdatePopup(){
@@ -8077,14 +9157,11 @@ function showUpdatePopup(){
   const ov = document.createElement('div');
   ov.id = 'update-popup';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:1.25rem';
-  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:24rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:24rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:85vh;overflow-y:auto">
     <div style="font-size:2rem;text-align:center;margin-bottom:.3rem">🎉</div>
     <h2 style="font-size:1.15rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.3rem">${T('version_new_title')}</h2>
     <p style="font-size:.88rem;color:#64748B;text-align:center;margin-bottom:.9rem">${T('version_new_sub_pre')}<strong>${APP_VERSION}</strong>${T('version_new_sub_post')}</p>
-    <details style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:.7rem;padding:.6rem .8rem;margin-bottom:.9rem">
-      <summary style="cursor:pointer;font-size:.82rem;font-weight:700;color:#3B82F6;list-style:none">${T('version_changelog_label')}</summary>
-      <div style="margin-top:.6rem">${changelogHTML()}</div>
-    </details>
+    <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:.7rem;padding:.6rem .8rem;margin-bottom:.9rem">${changelogHTML()}</div>
     <p style="font-size:.74rem;color:#94A3B8;text-align:center;margin-bottom:.8rem">${T('version_progress_safe')}</p>
     <div style="display:flex;gap:.5rem">
       <button onclick="dismissUpdate()" style="flex:1;padding:.6rem;border-radius:.7rem;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;font-weight:600;font-size:.85rem;cursor:pointer">${T('version_later')}</button>
@@ -8100,7 +9177,7 @@ function showChangelog(){
   ov.id = 'changelog-popup';
   ov.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:1.25rem';
   ov.onclick = (e)=>{ if(e.target===ov) ov.remove(); };
-  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:24rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:80vh;overflow-y:auto">
+  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:24rem;width:100%;padding:1.4rem;box-shadow:0 12px 40px rgba(0,0,0,.25);max-height:85vh;overflow-y:auto">
     <h2 style="font-size:1.1rem;font-weight:800;color:#1E293B;margin-bottom:.2rem">${T('version_changelog_title')}</h2>
     <p style="font-size:.78rem;color:#94A3B8;margin-bottom:.4rem">${T('version_current_pre')}<strong>Beta ${APP_VERSION}</strong></p>
     <p style="font-size:.8rem;color:#059669;font-weight:600;margin-bottom:.9rem">✓ ${T('version_uptodate')||'App ist aktuell'}</p>
@@ -8146,8 +9223,8 @@ function checkVersion(){
   // A brand-new user (no seenVersion yet) just gets the current version stored silently.
   if(!P.seenVersion){ P.seenVersion = APP_VERSION; save(); return; }
   if(P.seenVersion !== APP_VERSION){ showUpdatePopup(); return; }
-  // Already on the current version: give a short confirmation when online.
-  if(navigator.onLine){ showToast('✓ ' + (T('version_uptodate')||'App ist aktuell') + ' (Beta ' + APP_VERSION + ')'); }
+  // Kein Toast mehr bei jedem Start – der Versions-Badge unten rechts reicht,
+  // und per Klick darauf gibt es die "App ist aktuell"-Bestätigung.
 }
 
 // ═══════════════════════════════════════════════
@@ -8178,11 +9255,18 @@ if('serviceWorker' in navigator){
 // INITIALISE APP
 // ═══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', ()=>{
-  checkStreak();
   applyA11y();
   go('home');
   updateLangUI();
-  checkVersion();
+  if(!P.onboarded){
+    // Erstes Öffnen: verpflichtendes Onboarding (Name, Avatar, Klasse,
+    // Sprach-Check). Das Update-Pop-up wird dabei still übersprungen.
+    P.seenVersion = APP_VERSION; save();
+    renderVersionBadge();
+    startOnboarding('full');
+  } else {
+    checkVersion();
+  }
 });
 </script>
 </body>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ec · Lehrkräfte-Auswertung</title>
+<meta name="robots" content="noindex">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #F8FAFC; color: #1E293B; padding: 2rem 1.5rem; }
+  .wrap { max-width: 72rem; margin: 0 auto; }
+  h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: .25rem; }
+  .sub { color: #64748B; font-size: .9rem; margin-bottom: 1.5rem; }
+  #drop { border: 2.5px dashed #93C5FD; background: #EFF6FF; border-radius: 1rem; padding: 2.2rem 1rem; text-align: center; cursor: pointer; transition: background .15s; margin-bottom: 1.5rem; }
+  #drop.over { background: #DBEAFE; border-color: #3B82F6; }
+  #drop p { color: #1D4ED8; font-weight: 600; font-size: .95rem; }
+  #drop small { color: #64748B; display: block; margin-top: .35rem; }
+  table { border-collapse: collapse; width: 100%; background: #fff; border-radius: .75rem; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.07); font-size: .85rem; }
+  th { background: #1E293B; color: #E2E8F0; text-align: left; padding: .55rem .7rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; cursor: pointer; user-select: none; }
+  td { padding: .55rem .7rem; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
+  tr:hover td { background: #F8FAFC; }
+  .bar { background: #E2E8F0; border-radius: 99px; height: .5rem; min-width: 4.5rem; overflow: hidden; }
+  .bar > div { height: 100%; border-radius: 99px; }
+  .pill { display: inline-block; font-size: .72rem; font-weight: 700; padding: .1rem .5rem; border-radius: 99px; background: #FEF3C7; color: #92400E; margin: .1rem .15rem .1rem 0; }
+  .muted { color: #94A3B8; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  #summary { display: none; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .stat { background: #fff; border: 1px solid #E2E8F0; border-radius: .75rem; padding: .7rem 1.1rem; }
+  .stat b { font-size: 1.2rem; display: block; }
+  .stat span { font-size: .72rem; color: #64748B; }
+  .hint { font-size: .78rem; color: #94A3B8; margin-top: 1rem; }
+  @media print { #drop, .hint { display: none; } body { padding: 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📊 English Companion – Klassenübersicht</h1>
+  <p class="sub">Lade die Fortschritts-Exporte deiner Schüler (JSON-Dateien aus „My Progress → Fortschritt sichern"). Alles bleibt auf deinem Gerät – nichts wird hochgeladen.</p>
+
+  <div id="drop" onclick="document.getElementById('file').click()">
+    <p>📂 JSON-Dateien hierher ziehen oder klicken zum Auswählen</p>
+    <small>Mehrere Dateien gleichzeitig möglich · erneutes Laden desselben Schülers ersetzt den alten Eintrag</small>
+    <input id="file" type="file" accept=".json,application/json" multiple style="display:none">
+  </div>
+
+  <div id="summary"></div>
+  <div id="tablewrap"></div>
+  <p class="hint">Tipp: Spaltenkopf anklicken zum Sortieren · Strg+P für einen Ausdruck der Tabelle.</p>
+</div>
+
+<script>
+const students = new Map(); // key: Name+Datei → Datensatz
+let sortKey = 'name', sortDir = 1;
+
+const drop = document.getElementById('drop');
+['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev, e=>{ e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e=>handleFiles(e.dataTransfer.files));
+document.getElementById('file').addEventListener('change', e=>{ handleFiles(e.target.files); e.target.value=''; });
+
+function handleFiles(files){
+  Array.from(files).forEach(f=>{
+    const reader = new FileReader();
+    reader.onload = ev=>{
+      try{
+        const p = JSON.parse(ev.target.result);
+        if(typeof p!=='object' || p===null || !('vocab' in p) || !('grammar' in p)){
+          alert(f.name+': Das ist keine English-Companion-Exportdatei.'); return;
+        }
+        const row = analyse(p, f.name);
+        students.set(row.name.toLowerCase()+'|'+ (row.cls||''), row);
+        renderTable();
+      }catch(err){ alert(f.name+': Datei konnte nicht gelesen werden.'); }
+    };
+    reader.readAsText(f);
+  });
+}
+
+function analyse(p, filename){
+  const words = Object.values(p.vocab||{}).reduce((s,v)=>s+((v.known||[]).length),0);
+  const grammarDone = Object.values(p.grammar||{}).filter(g=>g.completed).length;
+  const level = Math.floor((p.xp||0)/100)+1;
+  const as = p.assessments||[];
+  const lastA = as[as.length-1] || null;
+  const firstA = as[0] || null;
+  // Schwerpunkte: Themen unter 60 % im letzten Check
+  const focus = [];
+  if(lastA && lastA.perTopic){
+    for(const tid in lastA.perTopic){
+      const r = lastA.perTopic[tid];
+      if(r.total>0 && r.right/r.total < .6) focus.push(tid);
+    }
+  }
+  return {
+    name: p.name || filename.replace(/\.json$/i,''),
+    cls: p.cls || '',
+    level, xp: p.xp||0,
+    streak: p.streak||0, lastDate: p.lastDate||'',
+    words, grammarDone,
+    reading: (p.reading||[]).length, writing: (p.writing||[]).length,
+    checkPct: lastA ? lastA.pct : null,
+    checkDate: lastA ? lastA.date : '',
+    checkTrend: (lastA && firstA && as.length>1) ? lastA.pct - firstA.pct : null,
+    focus,
+    errors: p.errors||{}
+  };
+}
+
+const TOPIC_NAMES = { sp:'Simple Present', past:'Simple Past', wo:'Word Order', pp:'Present Progressive', gtf:'Going-to Future', qn:'Questions/Negatives' };
+
+function setSort(k){ if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; } renderTable(); }
+
+function renderTable(){
+  const rows = Array.from(students.values()).sort((a,b)=>{
+    const va=a[sortKey], vb=b[sortKey];
+    if(typeof va==='string') return sortDir * String(va).localeCompare(String(vb),'de');
+    return sortDir * ((va===null?-1:va) - (vb===null?-1:vb));
+  });
+  // Zusammenfassung
+  const sum = document.getElementById('summary');
+  if(rows.length){
+    const avg = arr=>arr.length?Math.round(arr.reduce((s,x)=>s+x,0)/arr.length):0;
+    const checks = rows.filter(r=>r.checkPct!==null).map(r=>r.checkPct);
+    sum.style.display='flex';
+    sum.innerHTML = `
+      <div class="stat"><b>${rows.length}</b><span>Schüler geladen</span></div>
+      <div class="stat"><b>${avg(rows.map(r=>r.xp))} XP</b><span>Ø Punkte</span></div>
+      <div class="stat"><b>${avg(rows.map(r=>r.words))}</b><span>Ø Vokabeln gelernt</span></div>
+      <div class="stat"><b>${checks.length?avg(checks)+'%':'–'}</b><span>Ø Sprach-Check</span></div>`;
+  }
+  const focusHTML = r => r.focus.length
+    ? r.focus.map(t=>`<span class="pill">${TOPIC_NAMES[t]||t}</span>`).join('')
+    : (r.checkPct===null?'<span class="muted">kein Check</span>':'<span style="color:#059669;font-weight:600">✓ keine</span>');
+  document.getElementById('tablewrap').innerHTML = rows.length ? `
+  <div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th onclick="setSort('name')">Name</th>
+      <th onclick="setSort('cls')">Kl.</th>
+      <th onclick="setSort('xp')" class="num">Level / XP</th>
+      <th onclick="setSort('streak')" class="num">🔥 Streak</th>
+      <th onclick="setSort('words')" class="num">Vokabeln</th>
+      <th onclick="setSort('grammarDone')" class="num">Grammatik</th>
+      <th onclick="setSort('reading')" class="num">Read / Write</th>
+      <th onclick="setSort('checkPct')">Sprach-Check</th>
+      <th>Schwerpunkte</th>
+      <th onclick="setSort('lastDate')">Zuletzt aktiv</th>
+    </tr></thead>
+    <tbody>${rows.map(r=>`<tr>
+      <td style="font-weight:700">${esc(r.name)}</td>
+      <td>${r.cls||'–'}</td>
+      <td class="num">Lv ${r.level} · ${r.xp}</td>
+      <td class="num">${r.streak||'–'}</td>
+      <td class="num">${r.words}</td>
+      <td class="num">${r.grammarDone}/6</td>
+      <td class="num">${r.reading} / ${r.writing}</td>
+      <td>${r.checkPct===null?'<span class="muted">–</span>':`
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <div class="bar"><div style="width:${r.checkPct}%;background:${r.checkPct>=60?'#10B981':'#F59E0B'}"></div></div>
+          <span style="font-weight:700">${r.checkPct}%</span>
+          ${r.checkTrend!==null?`<span style="font-size:.72rem;color:${r.checkTrend>0?'#059669':r.checkTrend<0?'#DC2626':'#94A3B8'}">${r.checkTrend>0?'▲+':''}${r.checkTrend<0?'▼':''}${r.checkTrend!==0?r.checkTrend:'▬'}</span>`:''}
+        </div><small class="muted">${r.checkDate}</small>`}</td>
+      <td style="max-width:16rem">${focusHTML(r)}</td>
+      <td>${r.lastDate||'–'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>` : '';
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+</script>
+</body>
+</html>
