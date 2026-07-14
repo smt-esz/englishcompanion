@@ -91,10 +91,12 @@ function analyse(p, filename){
       if(r.total>0 && r.right/r.total < .6) focus.push(tid);
     }
   }
+  // XP der letzten 30 Tage (fürs Klassenziel)
+  const xp30 = Object.values(p.xpLog||{}).reduce((s,v)=>s+v,0);
   return {
     name: p.name || filename.replace(/\.json$/i,''),
     cls: p.cls || '',
-    level, xp: p.xp||0,
+    level, xp: p.xp||0, xp30,
     streak: p.streak||0, lastDate: p.lastDate||'',
     words, grammarDone,
     reading: (p.reading||[]).length, writing: (p.writing||[]).length,
@@ -106,7 +108,7 @@ function analyse(p, filename){
   };
 }
 
-const TOPIC_NAMES = { sp:'Simple Present', past:'Simple Past', wo:'Word Order', pp:'Present Progressive', gtf:'Going-to Future', qn:'Questions/Negatives' };
+const TOPIC_NAMES = { sp:'Simple Present', past:'Simple Past', wo:'Word Order', pp:'Present Progressive', gtf:'Going-to Future', qn:'Questions/Negatives', vocab:'Vokabular', listening:'Hörverstehen' };
 
 function setSort(k){ if(sortKey===k) sortDir*=-1; else { sortKey=k; sortDir=1; } renderTable(); }
 
@@ -125,6 +127,7 @@ function renderTable(){
     sum.innerHTML = `
       <div class="stat"><b>${rows.length}</b><span>Schüler geladen</span></div>
       <div class="stat"><b>${avg(rows.map(r=>r.xp))} XP</b><span>Ø Punkte</span></div>
+      <div class="stat"><b>${rows.reduce((s,r)=>s+(r.xp30||0),0)} XP</b><span>Klasse gesamt (letzte 30 Tage) – fürs Klassenziel</span></div>
       <div class="stat"><b>${avg(rows.map(r=>r.words))}</b><span>Ø Vokabeln gelernt</span></div>
       <div class="stat"><b>${checks.length?avg(checks)+'%':'–'}</b><span>Ø Sprach-Check</span></div>`;
   }

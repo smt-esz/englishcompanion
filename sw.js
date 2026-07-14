@@ -3,7 +3,7 @@
 // as soon as the device is online; stale-while-revalidate for other assets;
 // cache fallback when offline.
 // Alle Assets liegen lokal (kein CDN mehr) – die App ist komplett offline-fähig.
-const CACHE = 'my-english-companion-v19';
+const CACHE = 'my-english-companion-v23';
 const CORE = [
   './',
   './index.html',

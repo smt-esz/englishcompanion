@@ -104,6 +104,48 @@
   }
   .section-page { display:none; }
   .section-page.active { display:block; }
+
+  /* ── Mobile Bottom-Nav: stabil & sauber eingebettet ──
+     translateZ erzwingt eine eigene Compositing-Ebene, damit die Leiste
+     beim Scrollen nicht "mitwandert"/ruckelt (v.a. iOS Safari). */
+  #mobile-nav {
+    transform: translateZ(0);
+    will-change: transform;
+    border-top: none;
+    box-shadow: 0 -4px 20px rgba(15,23,42,.08);
+    border-radius: 1.1rem 1.1rem 0 0;
+    padding-top: .35rem;
+  }
+  #mobile-nav button { flex: 1; max-width: 5.5rem; border-radius: .75rem; padding: .3rem 0 .25rem; transition: color .15s; }
+  #mobile-nav button.active { color: #2563EB; }
+  #mobile-nav button.active > span:first-child {
+    background: #EFF6FF; border-radius: 99px; padding: .05rem .8rem; display: inline-block;
+  }
+  #topbar { transform: translateZ(0); box-shadow: 0 1px 8px rgba(15,23,42,.05); border-bottom: none; }
+
+  /* Ruhigeres Scrollen auf Mobilgeräten */
+  html, body { overscroll-behavior-y: none; }
+  .main-content { min-height: 100dvh; }
+
+  /* ── Startseiten-Banner: mobil kompakt (eine schlanke Zeile) ── */
+  @media(max-width:600px){
+    .home-hero { padding: .8rem 1rem !important; }
+    .home-hero h1 { font-size: 1.05rem !important; margin-bottom: 0 !important; }
+    .home-hero .home-hero-sub { display: none; }
+    .home-hero .home-hero-avatar { font-size: 1.4rem !important; padding: .4rem !important; border-radius: .7rem !important; }
+    .home-hero .home-hero-streak { padding: .3rem .55rem !important; border-radius: .7rem !important; }
+    .home-hero .home-hero-streak div { font-size: .95rem !important; }
+    .home-hero .home-hero-streak div:last-child { font-size: .58rem !important; }
+  }
+
+  /* ── XP-Chip & Konfetti (Feiern von Erfolgen) ── */
+  #xp-chip { position:fixed; left:50%; transform:translateX(-50%) translateY(8px); bottom:calc(5.5rem + env(safe-area-inset-bottom)); z-index:9997; background:#7C3AED; color:#fff; font-weight:800; font-size:.9rem; padding:.4rem .9rem; border-radius:99px; box-shadow:0 6px 18px rgba(124,58,237,.35); opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; }
+  #xp-chip.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  @media(min-width:900px){ #xp-chip { bottom:2rem; } }
+  .confetti-bit { position:fixed; width:.55rem; height:.55rem; border-radius:2px; z-index:9996; pointer-events:none; top:-1rem; animation: confetti-fall linear forwards; }
+  @keyframes confetti-fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity:.15; }
+  }
 </style>
 </head>
 <body class="bg-slate-50">
@@ -119,7 +161,7 @@
 <aside id="sidebar" class="fixed top-0 left-0 h-full w-56 bg-white border-r border-slate-100 flex-col z-40">
   <div class="px-5 py-5 border-b border-slate-100">
     <div style="display:flex;align-items:center;justify-content:space-between">
-      <button onclick="go('home');if(window.innerWidth<900)toggleSidebar()" class="flex items-center gap-2 font-bold text-blue-600 text-base" style="background:none;border:none;cursor:pointer;padding:0" aria-label="Home">
+      <button onclick="go('home')" class="flex items-center gap-2 font-bold text-blue-600 text-base" style="background:none;border:none;cursor:pointer;padding:0" aria-label="Home">
         <img src="icon-192.png" alt="ec" style="width:2rem;height:2rem;border-radius:.4rem;object-fit:cover;background:#F59E0B">
         <span style="font-size:.95rem">English Companion</span>
       </button>
@@ -132,6 +174,7 @@
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('vocabulary')">🔤 <span data-i18n="nav_vocab">Vocabulary</span></button>
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('dict-skills')" style="padding-left:2.25rem;font-size:.82rem;color:#155E75;background:#ECFEFF;border-left:3px solid #06B6D4;border-radius:.5rem">📖 <span data-i18n="nav_dict">Dictionary Skills</span></button>
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('irreg','list')" style="padding-left:2.25rem;font-size:.82rem;color:#92400E;background:#FFFBEB;border-left:3px solid #F59E0B;border-radius:.5rem">📋 <span data-i18n="nav_irreg">Irregular Verbs</span></button>
+    <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium cursor-pointer" onclick="go('review')" style="padding-left:2.25rem;font-size:.82rem;color:#0C4A6E;background:#F0F9FF;border-left:3px solid #0EA5E9;border-radius:.5rem">🔁 <span data-i18n="nav_review">Review</span><span id="nav-review-badge" style="display:none;margin-left:auto;background:#0EA5E9;color:#fff;border-radius:99px;font-size:.68rem;padding:.05rem .45rem;font-weight:700"></span></button>
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('reading-list')">📖 <span data-i18n="nav_reading">Reading</span></button>
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('writing-list')">✏️ <span data-i18n="nav_writing">Writing</span></button>
     <button class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 cursor-pointer" onclick="go('spiele')">🎮 <span data-i18n="nav_games">Games</span></button>
@@ -198,8 +241,31 @@
 // Die SuS sehen die Version unten rechts und bekommen
 // beim ersten Öffnen der neuen Version ein Update-Pop-up.
 // ═══════════════════════════════════════════════
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.3.1';
 const CHANGELOG = [
+  { v:'2.3.1', date:'2026', items:[
+    'Verneinungen noch klarer: didn\'t = did (Hilfsverb, orange) + n\'t (roter Marker) – wie beim gelben Endungs-Marker.',
+  ]},
+  { v:'2.3', date:'2026', items:[
+    'Grammatik-Farben nach dem Fokus-Prinzip: Jedes Thema markiert nur noch das, worum es geht – Endungen als gelber Marker, Signalwörter türkis.',
+    'Neu: Themen-Check pro Grammatikthema – ab 80 % gilt ein Thema als sicher, darunter gibt es passende Übungsempfehlungen.',
+    'Vokabeln: Dein Lernweg empfiehlt das nächste Thema passend zu deiner Klasse (neu: auch Klasse 7). Box-Erklärung und alle Übungsmodi zählen in die Boxen.',
+    'Wiederholen ist jetzt im Menü – mit Anzeige, wie viele Wörter fällig sind.',
+    'Das Übungspaket bevorzugt jetzt deine Schwerpunkte und fällige Wörter.',
+  ]},
+  { v:'2.2', date:'2026', items:[
+    'Level-Aufstiege und das Tagesziel werden jetzt mit Konfetti gefeiert – und jede Aktivität zeigt dir deine +XP.',
+    'Quick-Fire und Spiele geben jetzt XP (1 pro richtiger Antwort bzw. Bonus).',
+    'Tagesziel im Profil einstellbar. Karteikarten: Beispielsatz als Hinweis vorn, Rückseite nur noch die Übersetzung.',
+    'Vokabeln: Fach-Anzeige pro Wort – bei Fach 5 hakt sich ein Wort automatisch als sicher ab.',
+    'Mobil: Bottom-Leiste stabiler und schöner, Menü schließt nach Auswahl, kompakterer Startbereich.',
+  ]},
+  { v:'2.1', date:'2026', items:[
+    'Sprach-Check prüft jetzt auch Vokabular und Hörverstehen – Fehler wandern automatisch in deinen Wiederholungsplan.',
+    'Erinnerung an den Zwischenstand-Check alle 6 Wochen.',
+    'Neu: Klassenziel-Anzeige (wenn von der Lehrkraft aktiviert).',
+    'Fortschritt kann jetzt direkt per E-Mail an die Lehrkraft geschickt werden.',
+  ]},
   { v:'2.0', date:'2026', items:[
     'Neu: Sprach-Check beim ersten Start – die App zeigt dir deine Übungs-Schwerpunkte und deine Entwicklung.',
     'Neu: Vokabeln hören & tippen (Diktat) und Aussprache-Training mit dem Mikrofon.',
@@ -288,6 +354,43 @@ function teacherEmailFromName(name){
 }
 function teacherOptions(){
   return TEACHER_NAMES.map(n=>({name:n, email:teacherEmailFromName(n)}));
+}
+
+// ═══════════════════════════════════════════════
+// KLASSENZIEL (optional) – hier als Lehrkraft pflegen.
+// active auf true setzen, Zeitraum und XP-Ziel pro Schüler anpassen.
+// Jeder Schüler sieht auf der Startseite seinen eigenen Beitrag
+// (gezählt werden XP im Zeitraum; das XP-Tagebuch reicht 30 Tage zurück,
+// der Zeitraum sollte also höchstens ~4 Wochen lang sein).
+// Die Klassensumme siehst du in teacher.html über die Schüler-Exporte.
+// ═══════════════════════════════════════════════
+const CLASS_GOAL = {
+  active: false,
+  label: 'Fit in die Ferien!',
+  perStudentXP: 300,
+  from: '2026-07-01',
+  until: '2026-07-24'
+};
+
+function classGoalHTML(){
+  if(!CLASS_GOAL.active) return '';
+  const today = new Date().toISOString().slice(0,10);
+  if(today < CLASS_GOAL.from || today > CLASS_GOAL.until) return '';
+  let xp = 0;
+  for(const d in (P.xpLog||{})){ if(d >= CLASS_GOAL.from && d <= CLASS_GOAL.until) xp += P.xpLog[d]; }
+  const pct = Math.min(100, Math.round(xp/CLASS_GOAL.perStudentXP*100));
+  return `<div class="card" style="background:linear-gradient(135deg,#FDF4FF,#FAE8FF);border-color:#E9D5FF">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem">
+      <span style="font-size:1.6rem">🏆</span>
+      <div style="flex:1;min-width:0">
+        <p style="font-weight:800;color:#6B21A8;font-size:.95rem">${T('classgoal_title')}: ${CLASS_GOAL.label}</p>
+        <p style="font-size:.78rem;color:#9333EA">${T('classgoal_until')} ${CLASS_GOAL.until}</p>
+      </div>
+      <span style="font-weight:800;color:#6B21A8;white-space:nowrap">${xp}/${CLASS_GOAL.perStudentXP} XP</span>
+    </div>
+    ${pb(pct,'#A855F7')}
+    <p style="font-size:.78rem;color:#9333EA;margin-top:.35rem">${pct>=100?T('classgoal_done'):T('classgoal_your')}</p>
+  </div>`;
 }
 
 const GRAMMAR = [
@@ -2037,6 +2140,27 @@ function save(){ localStorage.setItem(SK, JSON.stringify(P)); }
 // ── LANGUAGE / i18n ─────────────────────────────────────────────
 const i18n = {
   de: {
+    vocab_k7:'Klasse 7', ob_cls7_hint:'Klasse 7 = Wiederholungsjahr: Alle Inhalte sind von Anfang an frei.',
+    nav_review:'Wiederholen',
+    path_title:'Dein Lernweg', path_next:'Empfohlen für dich', path_continue:'Weitermachen mit:', path_all:'Alle Themen anzeigen',
+    box_expl_title:'Was bedeuten die Boxen?', box_expl_body:'Jedes geübte Wort steckt in einer Box (1–5). Richtig beantwortet → eine Box höher, falsch → zurück in Box 1. Je höher die Box, desto später fragt dich die App wieder (nach 1/3/7/14/30 Tagen). Erreicht ein Wort Box 5, gilt es als sicher und bekommt automatisch den ✅. Es zählt jede Übung: Quiz, Tippen, Hören, Sprechen, Karteikarten und Wiederholen.',
+    gc_title:'Themen-Check', gc_btn:'Themen-Check', gc_safe:'Stark – Thema gemeistert!', gc_safe_sub:'Du kannst dieses Thema sicher. Es zählt jetzt als abgeschlossen.',
+    gc_safe_chip:'sicher', gc_notyet_title:'Noch nicht ganz!', gc_recommend:'Das hilft dir, die Lücken zu schließen:', gc_rec_rule:'Regel noch einmal ansehen', grammar_back_topic:'Zum Thema',
+    fc_hint_btn:'Hinweis: Beispielsatz',
+    profile_goal_label:'Mein Tagesziel (XP)', profile_goal_hint:'Wie viele XP willst du pro Tag schaffen? Standard: 30.',
+    levelup_title:'Level', levelup_avatar:'Neue Avatare freigeschaltet:', levelup_go:'Weiter so! 🎉',
+    goal_reached_toast:'Tagesziel erreicht – stark!',
+    vocab_known_hint:'✅ = sicher gekonnt. Hakt sich automatisch ab, wenn ein Wort im Wiederholungsplan Fach 5 erreicht (5× richtig, über Tage verteilt). Du kannst auch selbst abhaken.',
+    area_vocab:'Vokabular', area_listening:'Hörverstehen',
+    ob_listen_prompt:'🎧 Hör genau hin: Welches Wort hörst du?', ob_vocab_prompt:'Was heißt:',
+    check_nudge_title:'Zeit für deinen Zwischenstand!', check_nudge_sub:'Dein letzter Sprach-Check ist über 6 Wochen her. Zeig, was du dazugelernt hast!',
+    classgoal_title:'Klassenziel', classgoal_until:'bis', classgoal_your:'Dein Beitrag zum Klassenziel – jede Übung zählt!', classgoal_done:'🎉 Du hast deinen Teil geschafft! Weiter so!',
+    backup_mail_btn:'📧 An Lehrkraft senden', backup_mail_teacher_hint:'Wähle deine Lehrkraft, um den Fortschritt per E-Mail zu senden:',
+    backup_mail_pick_teacher:'Bitte wähle zuerst deine Lehrkraft aus.',
+    backup_mail_subject:'Mein Lernfortschritt',
+    backup_mail_body_1:'Hallo! Anbei mein Lernfortschritt aus dem English Companion.',
+    backup_mail_body_2:'WICHTIG: Bitte die gerade heruntergeladene Datei anhängen:',
+    backup_mail_body_3:'(Die Datei liegt im Download-Ordner. Einfach in diese E-Mail ziehen oder über die Büroklammer anhängen.)',
     home_today_zone:'Heute für dich', home_explore_zone:'Entdecken & Üben',
     home_focus_title:'Deine Schwerpunkte', home_focus_sub:'Diese Themen haben im Sprach-Check noch gehakt – hier lohnt sich das Üben am meisten:',
     profile_avatar_locked_pre:'Freigeschaltet ab Level ', profile_avatar_unlock_hint:'🔒 Weitere Avatare schaltest du mit steigendem Level frei.',
@@ -2392,6 +2516,27 @@ const i18n = {
     ex_next:'Weiter →', vocab_result_label:'Ergebnis',
   },
   en1: {
+    vocab_k7:'Class 7', ob_cls7_hint:'Class 7 = revision year: everything is open from the start.',
+    nav_review:'Review',
+    path_title:'Your learning path', path_next:'Recommended for you', path_continue:'Continue with:', path_all:'Show all topics',
+    box_expl_title:'What are the boxes?', box_expl_body:'Every word you practise is in a box (1-5). Correct answer → one box up, wrong → back to box 1. The higher the box, the later the app asks you again (after 1/3/7/14/30 days). When a word reaches box 5, it counts as safe and gets the ✅ automatically. Every mode counts: quiz, typing, listening, speaking, flashcards and review.',
+    gc_title:'Topic check', gc_btn:'Topic check', gc_safe:'Great - topic mastered!', gc_safe_sub:'You know this topic well. It now counts as completed.',
+    gc_safe_chip:'safe', gc_notyet_title:'Not quite yet!', gc_recommend:'This will help you close the gaps:', gc_rec_rule:'Read the rule again', grammar_back_topic:'Back to topic',
+    fc_hint_btn:'Hint: example sentence',
+    profile_goal_label:'My daily goal (XP)', profile_goal_hint:'How many XP do you want to get each day? Standard: 30.',
+    levelup_title:'Level', levelup_avatar:'New avatars unlocked:', levelup_go:'Keep going! 🎉',
+    goal_reached_toast:'Daily goal reached – great!',
+    vocab_known_hint:'✅ = you know it well. It gets ticked automatically when a word reaches box 5 in your review plan (5 correct answers over several days). You can also tick it yourself.',
+    area_vocab:'Vocabulary', area_listening:'Listening',
+    ob_listen_prompt:'🎧 Listen: Which word do you hear?', ob_vocab_prompt:'What does this mean:',
+    check_nudge_title:'Time for your check-up!', check_nudge_sub:'Your last language check was more than 6 weeks ago. Show what you have learnt!',
+    classgoal_title:'Class goal', classgoal_until:'until', classgoal_your:'Your part of the class goal – every exercise counts!', classgoal_done:'🎉 You did your part! Keep going!',
+    backup_mail_btn:'📧 Send to teacher', backup_mail_teacher_hint:'Choose your teacher to send your progress by email:',
+    backup_mail_pick_teacher:'Please choose your teacher first.',
+    backup_mail_subject:'My learning progress',
+    backup_mail_body_1:'Hello! Here is my learning progress from English Companion.',
+    backup_mail_body_2:'IMPORTANT: Please attach the file you just downloaded:',
+    backup_mail_body_3:'(The file is in your download folder. Drag it into this email or use the paperclip.)',
     home_today_zone:'For you today', home_explore_zone:'Explore & practise',
     home_focus_title:'Your focus topics', home_focus_sub:'These topics were hard in your language check. Practise them first:',
     profile_avatar_locked_pre:'Unlocks at level ', profile_avatar_unlock_hint:'🔒 You unlock more avatars as your level goes up.',
@@ -2730,6 +2875,27 @@ const i18n = {
     pwa_offline_note:'After installing, you can open English Companion like a real app – even without internet!'
   },
   en2: {
+    vocab_k7:'Class 7', ob_cls7_hint:'Class 7 = revision year: all content is available from the start.',
+    nav_review:'Review',
+    path_title:'Your learning path', path_next:'Recommended for you', path_continue:'Continue with:', path_all:'Show all topics',
+    box_expl_title:'What do the boxes mean?', box_expl_body:'Every word you practise sits in a box (1-5). Answer correctly → up one box, get it wrong → back to box 1. The higher the box, the later the app tests you again (after 1/3/7/14/30 days). Once a word reaches box 5 it counts as mastered and is ticked ✅ automatically. Every mode counts: quiz, typing, listening, speaking, flashcards and review.',
+    gc_title:'Topic check', gc_btn:'Topic check', gc_safe:'Excellent - topic mastered!', gc_safe_sub:'You have a solid command of this topic. It now counts as completed.',
+    gc_safe_chip:'mastered', gc_notyet_title:'Not quite there yet!', gc_recommend:'These will help you close the gaps:', gc_rec_rule:'Review the rule again', grammar_back_topic:'Back to topic',
+    fc_hint_btn:'Hint: example sentence',
+    profile_goal_label:'My daily goal (XP)', profile_goal_hint:'How many XP do you want to earn per day? Default: 30.',
+    levelup_title:'Level', levelup_avatar:'New avatars unlocked:', levelup_go:'Keep it up! 🎉',
+    goal_reached_toast:'Daily goal reached – well done!',
+    vocab_known_hint:'✅ = mastered. A word is ticked automatically once it reaches box 5 in your review plan (answered correctly 5 times across several days). You can also tick words yourself.',
+    area_vocab:'Vocabulary', area_listening:'Listening',
+    ob_listen_prompt:'🎧 Listen carefully: Which word do you hear?', ob_vocab_prompt:'What does this mean:',
+    check_nudge_title:'Time for a progress check!', check_nudge_sub:'Your last language check was over 6 weeks ago. Show how much you have improved!',
+    classgoal_title:'Class goal', classgoal_until:'until', classgoal_your:'Your contribution to the class goal – every exercise counts!', classgoal_done:'🎉 You have done your share! Keep it up!',
+    backup_mail_btn:'📧 Send to teacher', backup_mail_teacher_hint:'Choose your teacher to email your progress:',
+    backup_mail_pick_teacher:'Please select your teacher first.',
+    backup_mail_subject:'My learning progress',
+    backup_mail_body_1:'Hello! Attached is my learning progress from English Companion.',
+    backup_mail_body_2:'IMPORTANT: Please attach the file you just downloaded:',
+    backup_mail_body_3:'(You will find the file in your downloads folder. Drag it into this email or attach it via the paperclip.)',
     home_today_zone:'For you today', home_explore_zone:'Explore & practise',
     home_focus_title:'Your focus topics', home_focus_sub:'These topics were tricky in your language check - practising them will pay off most:',
     profile_avatar_locked_pre:'Unlocks at level ', profile_avatar_unlock_hint:'🔒 More avatars unlock as your level rises.',
@@ -3133,8 +3299,10 @@ function currentStreak(){
   return (P.lastDate===today || P.lastDate===yest) ? (P.streak||0) : 0;
 }
 function addXP(n){
-  P.xp = (P.xp||0) + n;
+  const prevLevel = Math.floor((P.xp||0)/XP_PER_LEVEL)+1;
   const today = new Date().toISOString().slice(0,10);
+  const prevDay = (P.dayXPDate===today) ? (P.dayXP||0) : 0;
+  P.xp = (P.xp||0) + n;
   if(P.dayXPDate !== today){ P.dayXPDate = today; P.dayXP = 0; }
   P.dayXP = (P.dayXP||0) + n;
   // XP-Tagebuch für den Wochenrückblick (letzte 30 Tage)
@@ -3144,6 +3312,60 @@ function addXP(n){
   for(const d in P.xpLog){ if(d < cutoff) delete P.xpLog[d]; }
   bumpStreak();
   save();
+  // Erfolge sichtbar machen: XP-Chip immer, Feiern bei Level-Aufstieg
+  // und beim Erreichen des Tagesziels.
+  showXPChip(n);
+  const newLevel = Math.floor(P.xp/XP_PER_LEVEL)+1;
+  if(newLevel > prevLevel){ celebrateLevelUp(newLevel); }
+  else if(prevDay < dailyGoal() && P.dayXP >= dailyGoal()){ celebrateGoal(); }
+}
+// Tagesziel: Standard 30 XP, im Profil anpassbar (P.dailyGoal)
+function dailyGoal(){ return P.dailyGoal || DAILY_GOAL; }
+
+// ── FEIERN: XP-Chip, Konfetti, Level-Up ──
+function showXPChip(n){
+  let c = document.getElementById('xp-chip');
+  if(!c){ c = document.createElement('div'); c.id='xp-chip'; document.body.appendChild(c); }
+  c.textContent = '+'+n+' XP';
+  c.classList.add('show');
+  clearTimeout(c._t);
+  c._t = setTimeout(()=>c.classList.remove('show'), 1800);
+}
+function confettiBurst(count){
+  const colors = ['#3B82F6','#10B981','#F59E0B','#EF4444','#8B5CF6','#EC4899','#0EA5E9'];
+  for(let i=0;i<(count||40);i++){
+    const b = document.createElement('div');
+    b.className = 'confetti-bit';
+    b.style.left = (Math.random()*100)+'vw';
+    b.style.background = colors[i%colors.length];
+    b.style.animationDuration = (1.6+Math.random()*1.4)+'s';
+    b.style.animationDelay = (Math.random()*.4)+'s';
+    const sz = (.3+Math.random()*.45)+'rem';
+    b.style.width = sz; b.style.height = sz;
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(), 3600);
+  }
+}
+function celebrateLevelUp(level){
+  confettiBurst(60);
+  if(document.getElementById('levelup-popup')) return;
+  const unlocked = AVATAR_TIERS.find(t=>t.lvl===level);
+  const ov = document.createElement('div');
+  ov.id = 'levelup-popup';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:9995;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;padding:1.25rem';
+  ov.onclick = (e)=>{ if(e.target===ov) ov.remove(); };
+  ov.innerHTML = `<div style="background:#fff;border-radius:1.1rem;max-width:20rem;width:100%;padding:1.6rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3)">
+    <div style="font-size:3rem">🚀</div>
+    <h2 style="font-size:1.3rem;font-weight:800;color:#1E293B;margin:.4rem 0">${T('levelup_title')} ${level}!</h2>
+    ${unlocked?`<p style="font-size:.85rem;color:#7C3AED;font-weight:600;margin-bottom:.2rem">${T('levelup_avatar')}</p>
+    <p style="font-size:2rem;margin-bottom:.6rem">${unlocked.list.join(' ')}</p>`:''}
+    <button class="btn-primary" style="width:100%" onclick="document.getElementById('levelup-popup').remove()">${T('levelup_go')}</button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+function celebrateGoal(){
+  confettiBurst(35);
+  showToast('🎯 '+T('goal_reached_toast'));
 }
 // Summe der letzten 7 Tage (inkl. heute) + Anzahl Übungstage
 function weekStats(){
@@ -3219,6 +3441,13 @@ function srsUpdate(topicId, wordRef, correct){
   e.b = correct ? Math.min(5, (e.b||0)+1) : 1;
   e.d = srsAddDays(SRS_INTERVALS[e.b]);
   P.srs[k] = e;
+  // Klare Regel: Fach 5 erreicht (5× richtig über Tage verteilt) =
+  // Wort sitzt → automatisch als gelernt (✅) abhaken.
+  if(e.b === 5){
+    if(!P.vocab[topicId]) P.vocab[topicId] = {known:[]};
+    if(!P.vocab[topicId].known) P.vocab[topicId].known = [];
+    if(!P.vocab[topicId].known.includes(idx)) P.vocab[topicId].known.push(idx);
+  }
   save();
 }
 
@@ -3365,8 +3594,8 @@ const GRAMMAR_OHE = {
     formula: [
       {type:'pos', label:'✅ Positive', cols:['I / You / We / They','<strong style="color:#10B981">play</strong>','football.']},
       {type:'pos', label:'', cols:['He / She / It','<strong style="color:#10B981">play<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">s</span></strong>','football.']},
-      {type:'neg', label:'❌ Negative', cols:['I / You / We / They','<span style="color:#F97316;font-weight:700">do</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','football.']},
-      {type:'neg', label:'', cols:['He / She / It','<span style="color:#F97316;font-weight:700">does</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','football.']},
+      {type:'neg', label:'❌ Negative', cols:['I / You / We / They','<span style="color:#F97316;font-weight:700">do</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span> play','football.']},
+      {type:'neg', label:'', cols:['He / She / It','<span style="color:#F97316;font-weight:700">does</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span> play','football.']},
       {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Do</span>','you / we / they','play football?']},
       {type:'q', label:'', cols:['<span style="color:#F97316;font-weight:700">Does</span>','he / she / it','play football?']}
     ]
@@ -3387,7 +3616,7 @@ const GRAMMAR_OHE = {
     formula: [
       {type:'pos', label:'✅ Regular', cols:['I / She / They','<strong style="color:#10B981">play<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ed</span></strong>','football.']},
       {type:'pos', label:'✅ Irregular', cols:['She','<strong style="color:#10B981">went</strong>','to London.']},
-      {type:'neg', label:'❌ Negative', cols:['all persons','<span style="color:#F97316;font-weight:700">did</span><span style="color:#EF4444;font-weight:700">n\'t</span> play','(base form!)']},
+      {type:'neg', label:'❌ Negative', cols:['all persons','<span style="color:#F97316;font-weight:700">did</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span> play','(base form!)']},
       {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Did</span>','you / he / they','play? (base form!)']},
     ]
   },
@@ -3405,7 +3634,7 @@ const GRAMMAR_OHE = {
     signal: ['Subject → Verb → Object','Time: at start or end of sentence','Question: verb before subject'],
     formula: [
       {type:'pos', label:'✅ Positive', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>','<span style="color:#64748B">O</span> + time']},
-      {type:'neg', label:'❌ Negative', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#EF4444">doesn\'t/didn\'t</span> + V','<span style="color:#64748B">O</span>']},
+      {type:'neg', label:'❌ Negative', cols:['<span style="color:#3B82F6">S</span>','<span style="color:#F97316;font-weight:700">does</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span>/<span style="color:#F97316;font-weight:700">did</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span> + V','<span style="color:#64748B">O</span>']},
       {type:'q', label:'❓ Question', cols:['<span style="color:#F97316">Do/Does/Did</span>','<span style="color:#3B82F6">S</span>','<span style="color:#10B981">V</span>?']}
     ]
   },
@@ -3424,7 +3653,7 @@ const GRAMMAR_OHE = {
       {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#F97316;font-weight:700">am</span>','<span style="color:#10B981">read</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
       {type:'pos', label:'', cols:['He / She','<span style="color:#F97316;font-weight:700">is</span>','<span style="color:#10B981">talk</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
       {type:'pos', label:'', cols:['We / They','<span style="color:#F97316;font-weight:700">are</span>','<span style="color:#10B981">play</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>.']},
-      {type:'neg', label:'❌ Negative', cols:['He','<span style="color:#F97316;font-weight:700">is</span><span style="color:#EF4444;font-weight:700">n\'t</span>','watch<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span> TV.']},
+      {type:'neg', label:'❌ Negative', cols:['He','<span style="color:#F97316;font-weight:700">is</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span>','watch<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span> TV.']},
       {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Are</span> you','read<span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ing</span>','a book?']}
     ]
   },
@@ -3443,7 +3672,7 @@ const GRAMMAR_OHE = {
     formula: [
       {type:'pos', label:'✅ Positive', cols:['I','<span style="color:#F97316;font-weight:700">am</span> <span style="color:#F97316;font-weight:700">going to</span>','play football.']},
       {type:'pos', label:'', cols:['She','<span style="color:#F97316;font-weight:700">is</span> <span style="color:#F97316;font-weight:700">going to</span>','start a hobby.']},
-      {type:'neg', label:'❌ Negative', cols:['We','<span style="color:#F97316;font-weight:700">are</span><span style="color:#EF4444;font-weight:700">n\'t</span> <span style="color:#F97316;font-weight:700">going to</span>','travel.']},
+      {type:'neg', label:'❌ Negative', cols:['We','<span style="color:#F97316;font-weight:700">are</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span> <span style="color:#F97316;font-weight:700">going to</span>','travel.']},
       {type:'q', label:'❓ Question', cols:['<span style="color:#F97316;font-weight:700">Is</span> he','<span style="color:#F97316;font-weight:700">going to</span>','join the team?']}
     ]
   },
@@ -3464,8 +3693,8 @@ const GRAMMAR_OHE = {
       {type:'q', label:'❓ Present (I/you/we/they)', cols:['<span style="color:#F97316;font-weight:700">Do</span>','you','like pizza?']},
       {type:'q', label:'❓ Present (he/she/it)', cols:['<span style="color:#F97316;font-weight:700">Does</span>','she','play tennis?']},
       {type:'q', label:'❓ Past (all)', cols:['<span style="color:#F97316;font-weight:700">Did</span>','they','win?']},
-      {type:'neg', label:'❌ Negative', cols:['I / you / we / they','<span style="color:#F97316;font-weight:700">do</span><span style="color:#EF4444;font-weight:700">n\'t</span>','like it.']},
-      {type:'neg', label:'', cols:['He / she / it','<span style="color:#F97316;font-weight:700">does</span><span style="color:#EF4444;font-weight:700">n\'t</span>','like it.']}
+      {type:'neg', label:'❌ Negative', cols:['I / you / we / they','<span style="color:#F97316;font-weight:700">do</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span>','like it.']},
+      {type:'neg', label:'', cols:['He / she / it','<span style="color:#F97316;font-weight:700">does</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">n\'t</span>','like it.']}
     ]
   }
 };
@@ -3520,6 +3749,13 @@ function _navigate(st, writeHistory){
   }
   const samePage = _state && _state.section===st.section && _state.sub===st.sub && _state.data===st.data;
   _state = st;
+  // Mobil: offene Sidebar nach jeder Navigation automatisch schließen
+  const _sb = document.getElementById('sidebar');
+  if(_sb && _sb.classList.contains('open') && window.innerWidth < 900){
+    _sb.classList.remove('open');
+    const _ov = document.getElementById('sidebar-overlay'); if(_ov) _ov.style.display='none';
+    const _cl = document.getElementById('sidebar-close'); if(_cl) _cl.style.display='none';
+  }
   if(writeHistory && window.history && history.pushState){
     try{
       if(!history.state || samePage) history.replaceState(st, '', '#'+section);
@@ -3536,6 +3772,22 @@ function _navigate(st, writeHistory){
     if(sec === 'writing-list' && (section==='writing-task'||section==='writing-haiku'||section==='writing-acrostic'||section==='writing-prompts')) match = true;
     if(sec === 'grammar' && (section==='grammar-topic'||section==='grammar-exercise'||section==='grammar-wortarten')) match = true;
     if(sec === 'vocabulary' && (section==='vocab-topic'||section==='vocab-test')) match = true;
+    el.classList.toggle('active', match);
+  });
+  // Fällig-Zähler am Wiederholen-Menüpunkt aktualisieren
+  const _rb = document.getElementById('nav-review-badge');
+  if(_rb){
+    const _due = srsDueList().length;
+    _rb.style.display = _due>0 ? 'inline-block' : 'none';
+    _rb.textContent = _due;
+  }
+  // Aktiven Eintrag auch in der mobilen Bottom-Nav markieren
+  document.querySelectorAll('#mobile-nav button').forEach(el=>{
+    const sec = (el.getAttribute('onclick')||'').match(/go\('([\w-]+)'/)?.[1];
+    let match = sec === section;
+    if(sec === 'grammar' && (section==='grammar-topic'||section==='grammar-exercise'||section==='grammar-wortarten')) match = true;
+    if(sec === 'vocabulary' && (section==='vocab-topic'||section==='vocab-test'||section==='dict-skills')) match = true;
+    if(sec === 'reading-list' && section==='reading-task') match = true;
     el.classList.toggle('active', match);
   });
   window.scrollTo(0,0);
@@ -3574,6 +3826,7 @@ function render(s){
     case 'grammar-quickfire': return renderGrammarQuickfire(s.sub);
     case 'vocab-test': return renderVocabTest();
     case 'review': return renderReview();
+    case 'grammar-check': return renderGrammarCheck();
     case 'skills': return renderReadingList();
     case 'reading-list': return renderReadingList();
     case 'reading-task': return renderReadingTask(s.sub);
@@ -3642,9 +3895,26 @@ function showProfile(){
       }).join('')}
     </div>
     <p style="font-size:.72rem;color:#94A3B8;margin-bottom:1rem">${T('profile_avatar_unlock_hint')}</p>
+    <details style="margin-bottom:1rem">
+      <summary style="cursor:pointer;font-size:.8rem;font-weight:700;color:#64748B">⚙️ ${T('profile_goal_label')}</summary>
+      <div style="display:flex;gap:.4rem;margin-top:.5rem" id="profile-goal-btns">
+        ${[15,30,45,60].map(g=>`<button onclick="pickGoal(${g})" data-goal="${g}" style="flex:1;padding:.4rem;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;background:${g===dailyGoal()?'#DCFCE7':'#F8FAFC'};border:2px solid ${g===dailyGoal()?'#16A34A':'#E2E8F0'};color:${g===dailyGoal()?'#166534':'#64748B'}">${g}</button>`).join('')}
+      </div>
+      <p style="font-size:.72rem;color:#94A3B8;margin-top:.35rem">${T('profile_goal_hint')}</p>
+    </details>
     <button onclick="saveProfile()" class="btn-primary" style="width:100%">${T('profile_save')}</button>
   </div>`;
   document.body.appendChild(ov);
+}
+let _pendingGoal = null;
+function pickGoal(g){
+  _pendingGoal = g;
+  document.querySelectorAll('#profile-goal-btns button').forEach(b=>{
+    const sel = parseInt(b.getAttribute('data-goal'),10)===g;
+    b.style.background = sel?'#DCFCE7':'#F8FAFC';
+    b.style.borderColor = sel?'#16A34A':'#E2E8F0';
+    b.style.color = sel?'#166534':'#64748B';
+  });
 }
 let _pendingAvatar = null;
 function pickAvatar(a){
@@ -3659,7 +3929,8 @@ function saveProfile(){
   const inp = document.getElementById('profile-name-input');
   P.name = (inp ? inp.value : '').trim().slice(0,20);
   if(_pendingAvatar !== null) P.avatar = _pendingAvatar;
-  _pendingAvatar = null;
+  if(_pendingGoal !== null) P.dailyGoal = _pendingGoal;
+  _pendingAvatar = null; _pendingGoal = null;
   save();
   const p = document.getElementById('profile-popup'); if(p) p.remove();
   document.getElementById('app').innerHTML = render(_state);
@@ -3674,16 +3945,55 @@ function saveProfile(){
 // ═══════════════════════════════════════════════
 let _ob = null;
 
+// Die Check-Bereiche: alle Grammatikthemen + Vokabular + Hörverstehen.
+// route = wohin die Schwerpunkt-Buttons führen.
+function assessmentAreas(){
+  return [
+    ...GRAMMAR.map(t=>({id:t.id, title:t.title, route:['grammar-topic',t.id]})),
+    {id:'vocab', title:T('area_vocab'), route:['vocabulary']},
+    {id:'listening', title:T('area_listening'), route:['listening-list']}
+  ];
+}
+
 function buildAssessmentQuestions(){
   const qs = [];
+  // 1) Grammatik: 2 Fragen je Thema
   GRAMMAR.forEach(t=>{
     const pool = [
       ...t.exercises.filter(e=>e.type==='mc').flatMap(e=>e.questions||[]),
       ...((typeof GRAMMAR_POOL!=='undefined' && GRAMMAR_POOL[t.id])||[]).filter(e=>e.type==='mc').flatMap(e=>e.questions||[])
     ];
     for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
-    pool.slice(0,2).forEach(q=>qs.push({topic:t.id, title:t.title, q}));
+    pool.slice(0,2).forEach(q=>qs.push({kind:'grammar', topic:t.id, title:t.title, q}));
   });
+  // 2) Vokabular: 5 Wörter aus dem Grundwortschatz (EN → DE wählen)
+  const basics = VOCAB.filter(t=>t.cat==='basics' && t.words.length>=4);
+  const usedEn = new Set();
+  const shuffledB = [...basics].sort(()=>Math.random()-.5);
+  for(let i=0; i<5 && shuffledB.length; i++){
+    const t = shuffledB[i % shuffledB.length];
+    const candidates = t.words.filter(w=>!usedEn.has(w.en));
+    if(!candidates.length) continue;
+    const w = candidates[Math.floor(Math.random()*candidates.length)];
+    usedEn.add(w.en);
+    const seenDe = new Set([w.de]);
+    const wrong = [...t.words].sort(()=>Math.random()-.5).filter(x=>{
+      if(x.en===w.en || seenDe.has(x.de)) return false; seenDe.add(x.de); return true;
+    }).slice(0,3);
+    const opts = [...wrong.map(x=>x.de), w.de].sort(()=>Math.random()-.5);
+    qs.push({kind:'vocab', topic:'vocab', topicId:t.id, w, title:T('area_vocab'), q:{q:w.en, opts, correct:opts.indexOf(w.de)}});
+  }
+  // 3) Hörverstehen: 2× Wort anhören und aus 4 ähnlichen wählen
+  for(let i=0; i<2 && shuffledB.length; i++){
+    const t = shuffledB[(i+3) % shuffledB.length];
+    const candidates = t.words.filter(w=>!usedEn.has(w.en) && w.en.length<=24);
+    if(candidates.length<4) continue;
+    const w = candidates[Math.floor(Math.random()*candidates.length)];
+    usedEn.add(w.en);
+    const wrong = candidates.filter(x=>x.en!==w.en).sort(()=>Math.random()-.5).slice(0,3);
+    const opts = [...wrong.map(x=>x.en), w.en].sort(()=>Math.random()-.5);
+    qs.push({kind:'listen', topic:'listening', topicId:t.id, w, title:T('area_listening'), text:w.en, q:{q:'', opts, correct:opts.indexOf(w.en)}});
+  }
   for(let i=qs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[qs[i],qs[j]]=[qs[j],qs[i]];}
   return qs;
 }
@@ -3728,9 +4038,11 @@ function obStepHTML(){
       <h2 style="font-size:1.2rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.3rem">${T('ob_cls_title')}</h2>
       <p style="font-size:.85rem;color:#64748B;text-align:center;margin-bottom:1.25rem">${T('ob_cls_sub')}</p>
       <div style="display:flex;gap:.75rem">
-        <button onclick="obSetCls(5)" style="flex:1;padding:1.1rem;border-radius:.9rem;border:2px solid #BFDBFE;background:#EFF6FF;font-size:1.05rem;font-weight:800;color:#1E40AF;cursor:pointer">${T('vocab_k5')}</button>
-        <button onclick="obSetCls(6)" style="flex:1;padding:1.1rem;border-radius:.9rem;border:2px solid #FDE68A;background:#FFFBEB;font-size:1.05rem;font-weight:800;color:#92400E;cursor:pointer">${T('vocab_k6')}</button>
-      </div>`;
+        <button onclick="obSetCls(5)" style="flex:1;padding:1.1rem .5rem;border-radius:.9rem;border:2px solid #BFDBFE;background:#EFF6FF;font-size:1.05rem;font-weight:800;color:#1E40AF;cursor:pointer">${T('vocab_k5')}</button>
+        <button onclick="obSetCls(6)" style="flex:1;padding:1.1rem .5rem;border-radius:.9rem;border:2px solid #FDE68A;background:#FFFBEB;font-size:1.05rem;font-weight:800;color:#92400E;cursor:pointer">${T('vocab_k6')}</button>
+        <button onclick="obSetCls(7)" style="flex:1;padding:1.1rem .5rem;border-radius:.9rem;border:2px solid #DDD6FE;background:#F5F3FF;font-size:1.05rem;font-weight:800;color:#5B21B6;cursor:pointer">${T('vocab_k7')}</button>
+      </div>
+      <p style="font-size:.75rem;color:#94A3B8;margin-top:.6rem;text-align:center">${T('ob_cls7_hint')}</p>`;
   }
   if(s.step===3){
     const item = s.questions[s.qIdx];
@@ -3744,7 +4056,14 @@ function obStepHTML(){
       </div>
       ${pb((s.qIdx/s.questions.length)*100,'#8B5CF6')}
       ${s.qIdx===0&&!s.answered?`<p style="font-size:.8rem;color:#64748B;background:#F5F3FF;border-radius:.5rem;padding:.5rem .7rem;margin:.6rem 0">${T('ob_check_sub')}</p>`:''}
-      <p style="font-weight:700;color:#1E293B;font-size:1rem;line-height:1.4;margin:.75rem 0">${item.q.q}</p>
+      ${item.kind==='listen'
+        ? `<div style="text-align:center;margin:.75rem 0">
+             <p style="font-weight:700;color:#1E293B;font-size:.95rem;margin-bottom:.5rem">${T('ob_listen_prompt')}</p>
+             <button onclick="speak('${escQ(item.text)}','en-GB')" style="font-size:2rem;background:#EFF6FF;border:2px solid #93C5FD;border-radius:50%;width:4.2rem;height:4.2rem;cursor:pointer" title="${T('listen_play')}">🔊</button>
+           </div>`
+        : item.kind==='vocab'
+        ? `<p style="font-weight:700;color:#1E293B;font-size:1rem;line-height:1.4;margin:.75rem 0">${T('ob_vocab_prompt')} <strong>${item.q.q}</strong> ${speakBtn(escQ(item.q.q))}</p>`
+        : `<p style="font-weight:700;color:#1E293B;font-size:1rem;line-height:1.4;margin:.75rem 0">${item.q.q}</p>`}
       <div id="ob-opts">
         ${item.q.opts.map((o,oi)=>`<button class="opt-btn" id="obopt-${oi}" onclick="obAnswer(${oi})">${o}</button>`).join('')}
       </div>
@@ -3753,7 +4072,7 @@ function obStepHTML(){
   // Schritt 4: Ergebnis
   const total = s.questions.length;
   const pct = total>0 ? Math.round(s.right/total*100) : 0;
-  const rows = GRAMMAR.map(t=>{
+  const rows = assessmentAreas().map(t=>{
     const r = s.perTopic[t.id]||{right:0,total:0};
     if(r.total===0) return '';
     const tp = Math.round(r.right/r.total*100);
@@ -3765,7 +4084,7 @@ function obStepHTML(){
       ${pb(tp, tp>=60?'#10B981':'#F59E0B')}
     </div>`;
   }).join('');
-  const focus = GRAMMAR.filter(t=>{ const r=s.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
+  const focus = assessmentAreas().filter(t=>{ const r=s.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
   return `<div style="text-align:center;font-size:2.2rem;margin-bottom:.3rem">${pct>=80?'🏆':pct>=50?'💪':'🌱'}</div>
     <h2 style="font-size:1.2rem;font-weight:800;color:#1E293B;text-align:center;margin-bottom:.2rem">${T('ob_result_title')}</h2>
     <p style="font-size:1.6rem;font-weight:800;text-align:center;color:${pct>=60?'#10B981':'#F59E0B'};margin-bottom:.75rem">${pct}%</p>
@@ -3806,6 +4125,14 @@ function obAnswer(oi){
   if(!s.perTopic[item.topic]) s.perTopic[item.topic] = {right:0,total:0};
   s.perTopic[item.topic].total++;
   if(right) s.perTopic[item.topic].right++;
+  // Der Check füttert das Training: Fehler landen in "Noch üben",
+  // Vokabeln wandern in den Leitner-Wiederholungsplan.
+  if(!right){
+    if(!P.errors) P.errors = {};
+    if(item.kind==='grammar'){ const k='grammar:'+item.topic; P.errors[k]=(P.errors[k]||0)+1; }
+    if(item.kind==='vocab' || item.kind==='listen'){ const k='vocab:'+item.topicId; P.errors[k]=(P.errors[k]||0)+1; }
+  }
+  if((item.kind==='vocab' || item.kind==='listen') && item.w) srsUpdate(item.topicId, item.w, right);
   document.querySelectorAll('#ob-opts .opt-btn').forEach(b=>b.disabled=true);
   const btn = document.getElementById('obopt-'+oi);
   if(btn) btn.className = right?'opt-btn opt-correct':'opt-btn opt-wrong';
@@ -3836,11 +4163,11 @@ function finishOnboarding(){
   const ov = document.getElementById('onboarding-popup'); if(ov) ov.remove();
   go(_state && _state.section==='lernweg' ? 'lernweg' : 'home');
 }
-// Letzter Check: Themen unter 60 % (für die Schwerpunkt-Karte auf der Startseite)
+// Letzter Check: Bereiche unter 60 % (für die Schwerpunkt-Karte auf der Startseite)
 function assessmentFocus(){
   const a = (P.assessments||[])[P.assessments?P.assessments.length-1:0];
   if(!a) return [];
-  return GRAMMAR.filter(t=>{ const r=a.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
+  return assessmentAreas().filter(t=>{ const r=a.perTopic[t.id]; return r&&r.total>0&&(r.right/r.total)<0.6; });
 }
 
 function getWeakAreas(){
@@ -3875,16 +4202,16 @@ function renderHome(){
 
   return `
   <div class="space-y-8">
-    <div class="card" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem">
-        <div style="display:flex;align-items:flex-start;gap:.9rem;min-width:0">
-          <button onclick="showProfile()" title="${T('profile_edit')}" aria-label="${T('profile_edit')}" style="font-size:2rem;line-height:1;background:rgba(255,255,255,.2);border:none;border-radius:1rem;padding:.55rem;cursor:pointer;flex-shrink:0">${P.avatar||'🙂'}</button>
+    <div class="card home-hero" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;color:#fff">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem">
+        <div style="display:flex;align-items:center;gap:.9rem;min-width:0">
+          <button onclick="showProfile()" title="${T('profile_edit')}" aria-label="${T('profile_edit')}" class="home-hero-avatar" style="font-size:2rem;line-height:1;background:rgba(255,255,255,.2);border:none;border-radius:1rem;padding:.55rem;cursor:pointer;flex-shrink:0">${P.avatar||'🙂'}</button>
           <div style="min-width:0">
             <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:.4rem;overflow-wrap:anywhere">${P.name ? T('home_title_name').replace('{name}', P.name) : T('home_title')}</h1>
-            <p style="opacity:.9;max-width:36rem;font-size:.95rem">${T('home_sub')}</p>
+            <p class="home-hero-sub" style="opacity:.9;max-width:36rem;font-size:.95rem">${T('home_sub')}</p>
           </div>
         </div>
-        ${currentStreak()>=1?`<div style="text-align:center;background:rgba(255,255,255,.2);border-radius:1rem;padding:.75rem 1rem;flex-shrink:0"><div style="font-size:1.5rem">🔥</div><div style="font-size:1.5rem;font-weight:800">${currentStreak()}</div><div style="font-size:.7rem;opacity:.8">${T('home_streak')}</div></div>`:''}
+        ${currentStreak()>=1?`<div class="home-hero-streak" style="text-align:center;background:rgba(255,255,255,.2);border-radius:1rem;padding:.75rem 1rem;flex-shrink:0"><div style="font-size:1.5rem">🔥</div><div style="font-size:1.5rem;font-weight:800">${currentStreak()}</div><div style="font-size:.7rem;opacity:.8">${T('home_streak')}</div></div>`:''}
       </div>
     </div>
 
@@ -3900,7 +4227,7 @@ function renderHome(){
 
     <h2 style="font-size:.85rem;font-weight:800;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:-.5rem">✨ ${T('home_today_zone')}</h2>
 
-    ${(()=>{ const lv=levelInfo(); const dg=dailyXP(); const dgPct=Math.min(100,Math.round(dg/DAILY_GOAL*100)); return `
+    ${(()=>{ const lv=levelInfo(); const dg=dailyXP(); const dgPct=Math.min(100,Math.round(dg/dailyGoal()*100)); return `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem">
       <div class="card" style="display:flex;align-items:center;gap:1rem">
         <div style="font-size:2rem">🚀</div>
@@ -3914,7 +4241,7 @@ function renderHome(){
         ${ringSVG(dgPct,'#16A34A')}
         <div style="flex:1;min-width:0">
           <p style="font-weight:800;color:#1E293B;font-size:1rem">${T('home_daily_goal')||'Tagesziel'}</p>
-          <p style="font-size:.8rem;color:#64748B">${dg}/${DAILY_GOAL} XP ${T('home_today_label')||'heute'}</p>
+          <p style="font-size:.8rem;color:#64748B">${dg}/${dailyGoal()} XP ${T('home_today_label')||'heute'}</p>
           ${dgPct>=100?`<p style="font-size:.78rem;color:#16A34A;font-weight:700">${T('home_goal_done')||'Geschafft!'}</p>`:''}
         </div>
       </div>
@@ -3937,10 +4264,14 @@ function renderHome(){
         <p style="font-weight:800;color:#9A3412;font-size:.95rem;margin-bottom:.2rem">🎯 ${T('home_focus_title')}</p>
         <p style="font-size:.8rem;color:#C2410C;margin-bottom:.6rem">${T('home_focus_sub')}</p>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-          ${focus.map(t=>`<button onclick="go('grammar-topic','${t.id}')" style="background:#fff;border:1.5px solid #FDBA74;color:#9A3412;border-radius:.6rem;padding:.4rem .8rem;font-size:.82rem;font-weight:700;cursor:pointer">${t.title} →</button>`).join('')}
+          ${focus.map(t=>`<button onclick="go('${t.route[0]}'${t.route[1]?`,'${t.route[1]}'`:''})" style="background:#fff;border:1.5px solid #FDBA74;color:#9A3412;border-radius:.6rem;padding:.4rem .8rem;font-size:.82rem;font-weight:700;cursor:pointer">${t.title} →</button>`).join('')}
         </div>
       </div>`;
     })()}
+
+    ${classGoalHTML()}
+
+    ${checkNudgeHTML()}
 
     ${backupNudgeHTML()}
 
@@ -4199,10 +4530,107 @@ function renderWortarten(){
       </table>
       <div style="background:rgba(255,255,255,.7);border-radius:.75rem;padding:.6rem .9rem">
         <p style="font-size:.75rem;font-weight:700;color:${s.accent};margin-bottom:.3rem">${T('grammar_examples_heading')}</p>
-        ${s.examples.map(e=>`<p style="font-size:.85rem;color:#1E293B;margin:.15rem 0">• ${e}</p>`).join('')}
+        ${s.examples.map(e=>`<p style="font-size:.85rem;color:#1E293B;margin:.15rem 0">• ${e.replace(/<u>/g,'<u style="color:'+s.accent+';font-weight:700;text-decoration-color:'+s.accent+'">')}</p>`).join('')}
       </div>
     </div>`).join('')}
   </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// THEMEN-CHECK: "Bin ich sicher?" pro Grammatikthema
+// 6 zufällige Fragen; ab 80 % gilt das Thema als gemeistert (✓ sicher).
+// Darunter: konkrete Übungsempfehlungen, die die Lücken schließen.
+// ═══════════════════════════════════════════════
+let _gcheck = null;
+
+function startGrammarCheck(topicId){
+  const t = GRAMMAR.find(g=>g.id===topicId);
+  if(!t) return;
+  const pool = [
+    ...t.exercises.filter(e=>e.type==='mc').flatMap(e=>e.questions||[]),
+    ...((GRAMMAR_POOL[topicId]||[]).filter(e=>e.type==='mc').flatMap(e=>e.questions||[]))
+  ];
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  _gcheck = {topicId, title:t.title, questions:pool.slice(0,6), idx:0, right:0, answered:false, done:false, logged:false};
+  go('grammar-check', topicId);
+}
+
+function renderGrammarCheck(){
+  const s = _gcheck;
+  if(!s) return renderGrammarList();
+  const t = GRAMMAR.find(g=>g.id===s.topicId);
+  if(s.done){
+    const pct = Math.round(s.right/s.questions.length*100);
+    const safe = pct >= 80;
+    if(!s.logged){
+      s.logged = true;
+      if(!P.grammar[s.topicId]) P.grammar[s.topicId] = {};
+      P.grammar[s.topicId].checkPct = pct;
+      P.grammar[s.topicId].checkDate = new Date().toISOString().slice(0,10);
+      if(safe){ P.grammar[s.topicId].completed = true; confettiBurst(45); }
+      else { if(!P.errors) P.errors={}; const k='grammar:'+s.topicId; P.errors[k]=(P.errors[k]||0)+1; }
+      addXP(safe?10:5); checkBadges(); save();
+    }
+    return `<div class="space-y-4">
+      <div class="card" style="text-align:center;padding:1.75rem">
+        <div style="font-size:3rem">${safe?'🏅':'💪'}</div>
+        <h2 style="font-size:1.3rem;font-weight:800;color:#1E293B;margin:.4rem 0">${safe?T('gc_safe'):T('gc_notyet_title')}</h2>
+        <div style="font-size:2rem;font-weight:800;color:${safe?'#10B981':'#F59E0B'}">${pct}%</div>
+        ${pb(pct, safe?'#10B981':'#F59E0B')}
+        ${safe
+          ? `<p style="font-size:.88rem;color:#059669;margin-top:.6rem">${T('gc_safe_sub')}</p>`
+          : `<div style="text-align:left;margin-top:1rem;background:#FFFBEB;border:1px solid #FDE68A;border-radius:.75rem;padding:.8rem 1rem">
+              <p style="font-size:.85rem;font-weight:700;color:#92400E;margin-bottom:.5rem">${T('gc_recommend')}</p>
+              <div style="display:flex;flex-direction:column;gap:.4rem">
+                <button onclick="go('grammar-topic','${s.topicId}')" style="text-align:left;background:#fff;border:1.5px solid #FDE68A;border-radius:.6rem;padding:.5rem .75rem;font-size:.85rem;font-weight:600;color:#92400E;cursor:pointer">💡 ${T('gc_rec_rule')}</button>
+                ${(t?t.exercises:[]).map(ex=>`<button onclick="go('grammar-exercise','${s.topicId}','${ex.id}')" style="text-align:left;background:#fff;border:1.5px solid #FDE68A;border-radius:.6rem;padding:.5rem .75rem;font-size:.85rem;font-weight:600;color:#92400E;cursor:pointer">✏️ ${ex.title}</button>`).join('')}
+              </div>
+            </div>`}
+        <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem">
+          <button class="btn-secondary" onclick="startGrammarCheck('${s.topicId}')">${T('btn_try_again')}</button>
+          <button class="btn-primary" onclick="go('grammar-topic','${s.topicId}')">${T('grammar_back_topic')}</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  const q = s.questions[s.idx];
+  return `<div class="space-y-4">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button onclick="go('grammar-topic','${s.topicId}')" style="background:none;border:none;color:#3B82F6;cursor:pointer">← ${s.title}</button>
+      <h1 style="font-size:1.2rem;font-weight:800;color:#1E293B;flex:1">🧭 ${T('gc_title')}</h1>
+      <span style="font-size:.85rem;color:#94A3B8">${s.idx+1}/${s.questions.length}</span>
+    </div>
+    ${pb((s.idx/s.questions.length)*100,'#8B5CF6')}
+    <div class="card space-y-3">
+      <p style="font-weight:700;color:#1E293B;font-size:1rem;line-height:1.4">${q.q}</p>
+      <div id="gc-opts">
+        ${q.opts.map((o,oi)=>`<button class="opt-btn" id="gcopt-${oi}" onclick="gcPick(${oi})">${o}</button>`).join('')}
+      </div>
+      <div id="gc-feedback"></div>
+    </div>
+  </div>`;
+}
+
+function gcPick(oi){
+  const s = _gcheck;
+  if(s.answered) return;
+  s.answered = true;
+  const q = s.questions[s.idx];
+  const right = oi === q.correct;
+  if(right) s.right++;
+  document.querySelectorAll('#gc-opts .opt-btn').forEach(b=>b.disabled=true);
+  const btn = document.getElementById('gcopt-'+oi);
+  if(btn) btn.className = right?'opt-btn opt-correct':'opt-btn opt-wrong';
+  if(!right){ const cb=document.getElementById('gcopt-'+q.correct); if(cb) cb.className='opt-btn opt-correct'; }
+  const fb = document.getElementById('gc-feedback');
+  if(fb) fb.innerHTML = `${!right&&q.exp?`<div class="feedback-info">💡 ${q.exp}</div>`:''}
+    <button class="btn-primary" style="width:100%;margin-top:.5rem" onclick="gcNext()">${s.idx+1<s.questions.length?T('btn_next'):T('ex_show_result')}</button>`;
+}
+function gcNext(){
+  _gcheck.idx++;
+  _gcheck.answered = false;
+  if(_gcheck.idx >= _gcheck.questions.length) _gcheck.done = true;
+  go('grammar-check', _gcheck.topicId);
 }
 
 function gDesc(t){ return (P.lang||'en2')==='de' ? (t.desc||'') : (t.descEN||t.desc||''); }
@@ -4305,16 +4733,7 @@ function renderGrammarTopic(id){
       </div>
       <div class="card">
         <h2 style="font-weight:700;color:#1E293B;margin-bottom:.75rem">${T('grammar_examples')}</h2>
-        <div style="font-size:.72rem;display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#3B82F6;border-radius:2px;margin-right:.25rem"></span>${T('legend_subject')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#10B981;border-radius:2px;margin-right:.25rem"></span>${T('legend_verb')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#F97316;border-radius:2px;margin-right:.25rem"></span>${T('legend_aux')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#EF4444;border-radius:2px;margin-right:.25rem"></span>${T('legend_neg')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#8B5CF6;border-radius:2px;margin-right:.25rem"></span>${T('legend_wh')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#FDE047;border-radius:2px;margin-right:.25rem"></span>${T('legend_ending')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#0891B2;border-radius:2px;margin-right:.25rem"></span>${T('legend_time')}</span>
-          <span><span style="display:inline-block;width:.65rem;height:.65rem;background:#64748B;border-radius:2px;margin-right:.25rem"></span>${T('legend_object')}</span>
-        </div>
+        ${grammarLegendHTML(t.id)}
         <div style="display:flex;flex-direction:column;gap:.5rem">
           ${t.examples.map(ex=>`<div style="padding:.6rem .75rem;background:#F8FAFC;border-radius:.75rem">
             <p style="font-weight:600;font-size:.9rem;margin-bottom:.2rem">${colorSentence(ex.en,t.id)}</p>
@@ -4435,10 +4854,17 @@ function renderGrammarTopic(id){
         <p style="color:#64748B;font-size:.85rem"><span class="pill-${t.level.toLowerCase()}">${t.level}</span> · ${t.cat}</p>
       </div>
     </div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">
       ${tBtn('observe','👀',T('grammar_tab_observe'))}
       ${tBtn('rule','💡',T('grammar_tab_rule'))}
       ${tBtn('exercises','✏️',T('grammar_tab_practise'))}
+      ${(()=>{
+        const g = P.grammar[t.id]||{};
+        const safe = (g.checkPct||0) >= 80;
+        return `<button onclick="startGrammarCheck('${t.id}')" style="margin-left:auto;padding:.5rem 1rem;border-radius:.75rem;font-size:.85rem;font-weight:700;cursor:pointer;border:1.5px solid ${safe?'#6EE7B7':'#C4B5FD'};background:${safe?'#ECFDF5':'#F5F3FF'};color:${safe?'#065F46':'#5B21B6'}">
+          ${safe?`✓ ${T('gc_safe_chip')} (${g.checkPct}%)`:`🧭 ${T('gc_btn')}`}
+        </button>`;
+      })()}
     </div>
     ${content}
   </div>`;
@@ -4456,47 +4882,81 @@ function showLang(lang){
   document.getElementById('lang-de').style.cssText = 'font-size:.8rem;padding:.4rem .9rem';
   document.getElementById('lang-en').style.cssText = 'font-size:.8rem;padding:.4rem .9rem';
 }
+// ═══ FOKUS-PRINZIP ═══
+// Pro Grammatikthema werden nur die Kategorien gefärbt, um die es in
+// diesem Thema geht – der Rest bleibt schwarz. So ist die Markierung
+// nie lückenhaft und lenkt den Blick aufs Wesentliche.
+// Darstellung (Leos Vorgabe): Endungen = gelber Marker, alles andere
+// = Textfarbe. Signalwörter/Zeitangaben türkis.
+const GRAMMAR_FOCUS = {
+  sp:  {subject:1, verb:1, ending:1, aux:1, neg:1, wh:1, time:1},
+  past:{verb:1, ending:1, aux:1, neg:1, wh:1, time:1},
+  pp:  {subject:1, verb:1, ending:1, aux:1, neg:1, wh:1, time:1},
+  gtf: {subject:1, verb:1, aux:1, neg:1, time:1},
+  qn:  {subject:1, verb:1, aux:1, neg:1, wh:1},
+  wo:  {subject:1, verb:1, aux:1, neg:1, wh:1, time:1, object:1}
+};
+const GC_ALL = {subject:1, verb:1, ending:1, aux:1, neg:1, wh:1, time:1, object:1};
+// Legende zeigt nur die Kategorien, die im aktuellen Thema markiert werden
+function grammarLegendHTML(topicId){
+  const f = GRAMMAR_FOCUS[topicId] || GC_ALL;
+  const META = [
+    ['subject','#3B82F6','legend_subject'], ['verb','#10B981','legend_verb'],
+    ['aux','#F97316','legend_aux'], ['neg','#EF4444','legend_neg'],
+    ['wh','#8B5CF6','legend_wh'], ['ending','#FDE047','legend_ending'],
+    ['time','#0891B2','legend_time'], ['object','#64748B','legend_object']
+  ];
+  return `<div style="font-size:.72rem;display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem">
+    ${META.filter(m=>f[m[0]]).map(m=>`<span><span style="display:inline-block;width:.65rem;height:.65rem;background:${m[1]};border-radius:2px;margin-right:.25rem"></span>${T(m[2])}</span>`).join('')}
+  </div>`;
+}
+// Erweiterte Signalwort-Erkennung (every evening, last year, two days ago, …)
+const TIME_RX = /\b(yesterday|today|tomorrow|tonight|right now|now|at the moment|currently|soon|last (night|week|month|year|summer|winter|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|weekend)|next (week|month|year|summer|winter|Monday|Friday|Saturday|Sunday|weekend)|every (day|morning|afternoon|evening|night|week|month|year|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday|weekend)|on (Mondays|Tuesdays|Wednesdays|Thursdays|Fridays|Saturdays|Sundays|school mornings)|at (weekends?|night)|after (school|dinner)|in the (mornings?|afternoons?|evenings?)|in \d{4}|(two|three|four|five|ten|a few) (days|weeks|months|years) ago|ago|always|usually|normally|often|sometimes|rarely|seldom|never|twice a week|once a week)\b/gi;
+
 function colorSentence(s, topicId){
+  const f = GRAMMAR_FOCUS[topicId] || GC_ALL;
   // Kontraktionen trennen: Hilfsverb orange + n't rot (don't = do + n't)
-  s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could)(n't)/gi,
-    '<span style="color:#F97316;font-weight:700">$1</span><span style="color:#EF4444;font-weight:700">$2</span>');
-  s = s.replace(/(can't|won't|n't)/gi,
-    '<span style="color:#EF4444;font-weight:700">$1</span>');
-  s = s.replace(/\b(did|does|do|was|were|is|are|am|will|can|could|would|should|shall|must|have|has|had)\b/g,
+  if(f.neg){
+    s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could|must|need)(n't)/gi,
+      (m,a,b)=>(f.aux?'<span style="color:#F97316;font-weight:700">'+a+'</span>':a)+'<span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">'+b+'</span>');
+    s = s.replace(/\b(can|won|shan)('t)/gi,
+      '<span style="color:#F97316;font-weight:700">$1</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
+  }
+  if(f.aux) s = s.replace(/\b(did|does|do|was|were|is|are|am|will|can|could|would|should|shall|must|have|has|had)\b/g,
     w => '<span style="color:#F97316;font-weight:700">'+w+'</span>');
-  s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
+  if(f.wh) s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
     '<span style="color:#8B5CF6;font-weight:700">$1</span>');
-  s = s.replace(/\b(I|You|We|They|He|She|It|you|we|they|he|she|it)\b/g,
+  if(f.subject) s = s.replace(/\b(I|You|We|They|He|She|It|you|we|they|he|she|it)\b/g,
     '<span style="color:#3B82F6;font-weight:700">$1</span>');
-  if(topicId==='past'){
+  if(f.ending && topicId==='past'){
     s = s.replace(/(\w+)(ied)\b/g,
       '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ied</span>');
     s = s.replace(/(\w{3,})(ed)\b/g,
       '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ed</span>');
   }
-  if(topicId==='pp'){
-    s = s.replace(/(\w+)(-ing)\b/g,
+  if(f.ending && topicId==='pp'){
+    s = s.replace(/(\w+)(-?ing)\b/g,
       '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
   }
-  s = s.replace(/\b(play|plays|played|go|goes|went|have|has|had|read|reads|like|likes|speak|speaks|eat|eats|ate|drink|drinks|drank|watch|watches|watched|live|lives|lived|know|knew|think|thought|feel|felt|brush|brushes|listen|listens|clean|cleans|cleaned|swim|swam|write|wrote|run|ran|come|came|see|saw|make|made|get|got|take|took|give|gave|say|said|find|found|buy|bought|bring|brought|meet|met|sit|sat|sleep|slept|visit|visited|arrive|arrived|start|started|finish|finished|help|helped|move|moved|study|studied|collect|collected|train|trained)\b/g,
-    (w, base) => {
-      // Simple Present: die 3.-Person-Endung -s/-es pink hervorheben
-      if(topicId==='sp'){
+  if(f.verb) s = s.replace(/\b(play|plays|played|go|goes|went|have|has|had|read|reads|like|likes|speak|speaks|eat|eats|ate|drink|drinks|drank|watch|watches|watched|live|lives|lived|know|knew|think|thought|feel|felt|brush|brushes|listen|listens|clean|cleans|cleaned|swim|swam|write|wrote|run|ran|come|came|see|saw|make|made|get|got|take|took|give|gave|say|said|find|found|buy|bought|bring|brought|meet|met|sit|sat|sleep|slept|visit|visited|arrive|arrived|start|started|finish|finished|help|helped|move|moved|study|studied|collect|collected|train|trained|boil|boils|sing|sings|work|works|talk|talks|tidy|tidies|wear|wears|win|won|lose|lost)\b/g,
+    (w) => {
+      // Simple Present: die 3.-Person-Endung -s/-es als Marker
+      if(f.ending && topicId==='sp'){
         const m = w.match(/^(\w+?)(es|s)$/);
         if(m && m[1].length>=3) return '<span style="color:#10B981;font-weight:700">'+m[1]+'</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">'+m[2]+'</span>';
       }
       return '<span style="color:#10B981;font-weight:700">'+w+'</span>';
     });
-  s = s.replace(/(yesterday|last night|last week|last summer|right now|at the moment|now|tomorrow|every day|every week|always|usually|often|sometimes|never)/gi,
-    '<span style="color:#0891B2;font-size:.9em">$1</span>');
+  if(f.time) s = s.replace(TIME_RX,
+    '<span style="color:#0891B2;font-weight:600">$&</span>');
   return s;
 }
 function colorExpl(s){
   // Kontraktionen trennen: Hilfsverb orange + n't rot (don't = do + n't)
-  s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could)(n't)/gi,
-    '<span style="color:#F97316;font-weight:700">$1</span><span style="color:#EF4444;font-weight:700">$2</span>');
-  s = s.replace(/(can't|won't|n't)/gi,
-    '<span style="color:#EF4444;font-weight:700">$1</span>');
+  s = s.replace(/\b(do|does|did|is|are|was|were|has|have|had|would|should|could|must|need)(n't)/gi,
+    '<span style="color:#F97316;font-weight:700">$1</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
+  s = s.replace(/\b(can|won|shan)('t)/gi,
+    '<span style="color:#F97316;font-weight:700">$1</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
   s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
     '<span style="color:#8B5CF6;font-weight:700">$1</span>');
   s = s.replace(/\b(not)\b/g, '<span style="color:#EF4444;font-weight:700">not</span>');
@@ -5310,6 +5770,47 @@ function renderDictSkills(){
   </div>`;
 }
 
+// ── VOKABEL-LERNPFAD ──
+// Empfohlene Reihenfolge passend zur Klasse: erst der Grundwortschatz der
+// eigenen Klassenstufe, dann die SOUL-Bausteine, dann der Rest.
+// Klasse 7 (Wiederholung) und "keine Klasse": alles gleichrangig.
+function vocabOrder(){
+  const cls = P.cls||0;
+  const byB = (a,b)=>(a.baustein||0)-(b.baustein||0);
+  const basics = VOCAB.filter(t=>t.cat==='basics'||!t.cat);
+  const soul5 = VOCAB.filter(t=>t.cat==='soul5').sort(byB);
+  const soul6 = VOCAB.filter(t=>t.cat==='soul6').sort(byB);
+  if(cls===5) return [...basics.filter(t=>!t.cls||t.cls===5), ...soul5, ...basics.filter(t=>t.cls===6), ...soul6];
+  if(cls===6) return [...basics.filter(t=>!t.cls||t.cls===6), ...soul6, ...basics.filter(t=>t.cls===5), ...soul5];
+  return [...basics, ...soul5, ...soul6];
+}
+function topicPct(t){
+  const k = ((P.vocab[t.id]||{}).known||[]).length;
+  return t.words.length ? Math.round(k/t.words.length*100) : 0;
+}
+function vocabPathHTML(){
+  const order = vocabOrder();
+  const next = order.find(t=>topicPct(t) < 80);
+  if(!next) return '';
+  const inProgress = order.filter(t=>t!==next && topicPct(t)>0 && topicPct(t)<80).slice(0,3);
+  return `<div class="card" style="background:linear-gradient(135deg,#EFF6FF,#E0F2FE);border-color:#93C5FD">
+    <p style="font-size:.72rem;font-weight:800;color:#1D4ED8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem">📍 ${T('path_title')}</p>
+    <div onclick="go('vocab-topic','${next.id}')" style="display:flex;align-items:center;gap:.9rem;background:#fff;border:1.5px solid #BFDBFE;border-radius:.9rem;padding:.75rem 1rem;cursor:pointer">
+      <span style="font-size:2rem">${next.emoji}</span>
+      <div style="flex:1;min-width:0">
+        <p style="font-size:.7rem;font-weight:700;color:#1D4ED8">${T('path_next')}</p>
+        <p style="font-weight:800;color:#1E293B;font-size:.95rem">${vocabTitle(next)}</p>
+        <div style="margin-top:.3rem">${pb(topicPct(next),'#3B82F6')}</div>
+      </div>
+      <span style="color:#3B82F6;font-size:1.2rem">›</span>
+    </div>
+    ${inProgress.length?`<p style="font-size:.72rem;font-weight:700;color:#64748B;margin:.7rem 0 .35rem">${T('path_continue')}</p>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      ${inProgress.map(t=>`<button onclick="go('vocab-topic','${t.id}')" style="background:#fff;border:1.5px solid #E2E8F0;border-radius:.6rem;padding:.35rem .7rem;font-size:.8rem;font-weight:600;color:#334155;cursor:pointer">${t.emoji} ${vocabTitle(t)} · ${topicPct(t)}%</button>`).join('')}
+    </div>`:''}
+  </div>`;
+}
+
 function renderVocabList(){
   const soul5  = VOCAB.filter(t=>t.cat==='soul5').sort((a,b)=>(a.baustein||0)-(b.baustein||0));
   const soul6  = VOCAB.filter(t=>t.cat==='soul6').sort((a,b)=>(a.baustein||0)-(b.baustein||0));
@@ -5382,9 +5883,15 @@ function renderVocabList(){
     </div>
 
     ${_q? searchHTML : `
-    ${soul5topics.length?catSection(soul5topics,T('lernweg_soul5'),'📘',T('vocab_coming_soon')):''}
-    ${soul6topics.length?catSection(soul6topics,T('lernweg_soul6'),'📗',T('vocab_coming_soon')):''}
-    ${basicstopics.length?catSection(basicstopics,T('lernweg_basics'),'🔤',''):''}`}
+    ${_vFilter==='all'?vocabPathHTML():''}
+    <details ${(!P.cls || P.cls===7 || _vFilter!=='all') ? 'open' : ''}>
+      <summary style="cursor:pointer;font-size:.9rem;font-weight:700;color:#3B82F6;padding:.4rem 0">${T('path_all')} (${filteredVocab.length})</summary>
+      <div style="margin-top:.75rem">
+        ${soul5topics.length?catSection(soul5topics,T('lernweg_soul5'),'📘',T('vocab_coming_soon')):''}
+        ${soul6topics.length?catSection(soul6topics,T('lernweg_soul6'),'📗',T('vocab_coming_soon')):''}
+        ${basicstopics.length?catSection(basicstopics,T('lernweg_basics'),'🔤',''):''}
+      </div>
+    </details>`}
 
     <div onclick="go('vocab-test')" class="card" style="cursor:pointer;display:flex;align-items:center;gap:1rem;background:#F5F3FF;border-color:#C4B5FD">
       <span style="font-size:2rem">🎯</span>
@@ -5664,13 +6171,19 @@ function nextVocabSpeak(id){
 
 function renderVocabList2(t, known, id){
   return `<div class="card">
-    <div style="display:flex;justify-content:space-between;margin-bottom:1rem">
+    <div style="display:flex;justify-content:space-between;margin-bottom:.4rem">
       <p style="font-weight:600;color:#1E293B">${known.size}/${t.words.length} ${T('label_learned')}</p>
       <button onclick="markAllKnown('${id}')" style="font-size:.8rem;color:#3B82F6;background:none;border:none;cursor:pointer">${T('vocab_all_learned')}</button>
     </div>
+    <details style="margin-bottom:1rem;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:.6rem;padding:.5rem .75rem">
+      <summary style="cursor:pointer;font-size:.78rem;font-weight:700;color:#0369A1">ℹ️ ${T('box_expl_title')}</summary>
+      <p style="font-size:.78rem;color:#0C4A6E;line-height:1.6;margin-top:.4rem">${T('box_expl_body')}</p>
+    </details>
     <div style="display:flex;flex-direction:column;gap:.4rem">
       ${t.words.map((w,i)=>{
         const isKnown = known.has(i);
+        const srsE = (P.srs||{})[id+':'+i];
+        const box = srsE ? (srsE.b||0) : 0;
         return `<div id="vw-${id}-${i}" style="display:flex;flex-direction:column;padding:.6rem .75rem;border-radius:.75rem;background:${isKnown?'#ECFDF5':'#F8FAFC'};cursor:pointer;transition:all .15s" onclick="toggleKnown('${id}',${i})">
           <div style="display:flex;align-items:flex-start;gap:.6rem;flex-wrap:wrap">
             <span class="vw-status" style="font-size:1.1rem;flex-shrink:0">${isKnown?'✅':'⭕'}</span>
@@ -5679,6 +6192,7 @@ function renderVocabList2(t, known, id){
               ${speakBtn(escQ(w.en))}
             </span>
             <span style="color:#64748B;font-size:.88rem;flex:1 1 7rem;text-align:right;overflow-wrap:anywhere;word-break:break-word">${w.de}</span>
+            ${box>0?`<span title="${T('review_box')} ${box}/5" style="font-size:.62rem;font-weight:800;flex-shrink:0;align-self:center;color:${box>=4?'#059669':'#0369A1'};background:${box>=4?'#ECFDF5':'#F0F9FF'};border:1px solid ${box>=4?'#6EE7B7':'#BAE6FD'};border-radius:99px;padding:.08rem .45rem;white-space:nowrap">${T('review_box')} ${box}/5</span>`:''}
           </div>
           ${w.example?`<div style="font-size:.75rem;color:#94A3B8;font-style:italic;margin-top:.25rem;padding-left:1.9rem;line-height:1.4;overflow-wrap:anywhere">${w.example}</div>`:''}
         </div>`;
@@ -5759,20 +6273,34 @@ function renderFlashcard(t, id){
         <p style="font-size:1.4rem;font-weight:700;color:${frontColor};text-align:center" id="fc-front">${frontText}</p>
         ${dir==='en-de'?speakBtn(escQ(frontText)):''}
       </div>
-      <p style="font-size:1rem;color:#3B82F6;margin-top:.5rem" id="fc-back-hint" style="display:block">${T('vocab_flip_hint')}</p>
+      ${dir==='en-de' && w.example ? `
+      <button onclick="event.stopPropagation();this.style.display='none';document.getElementById('fc-example').style.display='block'"
+        style="margin-top:.5rem;background:#FFFBEB;border:1px solid #FDE68A;color:#92400E;border-radius:.6rem;padding:.3rem .7rem;font-size:.78rem;font-weight:600;cursor:pointer">💡 ${T('fc_hint_btn')}</button>
+      <p id="fc-example" style="display:none;font-size:.85rem;color:#92400E;font-style:italic;margin-top:.5rem;text-align:center;background:#FFFBEB;border-radius:.5rem;padding:.4rem .7rem">📝 ${w.example}</p>` : ''}
+      <p style="font-size:1rem;color:#3B82F6;margin-top:.5rem" id="fc-back-hint">${T('vocab_flip_hint')}</p>
       <div style="display:none" id="fc-back">
         <p style="font-size:1.3rem;color:#64748B;text-align:center">${backText}</p>
-        ${w.example?`<p style="font-size:.82rem;color:#94A3B8;font-style:italic;margin-top:.5rem;text-align:center">📝 ${w.example}</p>`:''}
+        ${dir!=='en-de' && w.example?`<p style="font-size:.82rem;color:#94A3B8;font-style:italic;margin-top:.5rem;text-align:center">📝 ${w.example}</p>`:''}
       </div>
     </div>
     <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
       <button class="btn-secondary" onclick="fcNav(-1)">${T('vocab_fc_back')}</button>
-      <button onclick="toggleKnown('${id}',${origIdx});renderFCStatus(${origIdx},'${id}')" id="fc-known-btn" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;border:none;background:${known.has(origIdx)?'#ECFDF5':'#F1F5F9'};color:${known.has(origIdx)?'#065F46':'#64748B'}">
+      <button onclick="fcMark('${id}',${origIdx})" id="fc-known-btn" style="padding:.5rem 1rem;border-radius:.75rem;font-size:.85rem;font-weight:600;cursor:pointer;border:none;background:${known.has(origIdx)?'#ECFDF5':'#F1F5F9'};color:${known.has(origIdx)?'#065F46':'#64748B'}">
         ${known.has(origIdx)?T('vocab_fc_learned'):T('vocab_fc_practice')}
       </button>
       <button class="btn-primary" onclick="fcNav(1)">${T('ex_next')}</button>
     </div>
   </div>`;
+}
+
+// Flashcard-Selbsteinschätzung zählt jetzt auch in die Wiederholungs-Boxen:
+// "Gelernt" = ein Fach höher, "Noch üben" = zurück in Fach 1.
+function fcMark(id, origIdx){
+  const t = VOCAB.find(v=>v.id===id);
+  const wasKnown = !!(P.vocab[id] && (P.vocab[id].known||[]).includes(origIdx));
+  toggleKnown(id, origIdx);
+  if(t && t.words[origIdx]) srsUpdate(id, t.words[origIdx], !wasKnown);
+  renderFCStatus(origIdx, id);
 }
 
 function flipCard(){
@@ -7655,6 +8183,7 @@ function wsClickCell(r, c){
         if(!P.gameStats.wordsearch) P.gameStats.wordsearch=[];
         const now=new Date(); P.gameStats.wordsearch.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),found:s.words.length,total:s.words.length,duration:dur,topic:_wsTopicId});
         if(P.gameStats.wordsearch.length>20) P.gameStats.wordsearch.pop(); save();
+        addXP(5); checkBadges();
         // Auto-start a fresh round after a short celebration
         s.autoRestart = true;
         setTimeout(()=>{ if(_state && _state.section==='wordsearch'){ buildWordSearch(_wsTopicId); go('wordsearch',_wsTopicId); } }, 2200);
@@ -7740,6 +8269,7 @@ function memFlip(cardId){
         const _prevM=(P.gameStats.memory||[]); const _isRecM=_prevM.length>0 && s.moves < Math.min(..._prevM.map(g=>g.moves||9999));
         const now=new Date(); P.gameStats.memory.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),moves:s.moves,duration:s.duration,topic:s.topicId});
         if(P.gameStats.memory.length>20) P.gameStats.memory.pop(); save();
+        addXP(5); checkBadges();
         if(_isRecM && typeof showToast==='function') showToast('🏆 '+(T('record_new')||'Neuer Rekord!'));
       }
     }
@@ -7986,6 +8516,7 @@ function hmGuess(letter){
     if(!P.gameStats.hangman) P.gameStats.hangman=[];
     const now=new Date(); P.gameStats.hangman.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),won:_hmState.won,word:_hmState.word.toUpperCase(),duration:dur,mode:_hmState.challengeMode?'challenge':'normal'});
     if(P.gameStats.hangman.length>20) P.gameStats.hangman.pop(); save();
+    if(_hmState.won){ addXP(5); checkBadges(); }
   }
   document.getElementById('app').innerHTML = render(_state);
 }
@@ -8014,6 +8545,7 @@ function hmRevealLetter(){
     if(!P.gameStats.hangman) P.gameStats.hangman=[];
     const now=new Date(); P.gameStats.hangman.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),won:true,word:_hmState.word.toUpperCase(),duration:dur,mode:_hmState.challengeMode?'challenge':'normal'});
     if(P.gameStats.hangman.length>20) P.gameStats.hangman.pop(); save();
+    addXP(5); checkBadges();
   } else if(_hmState.wrong >= _hmState.maxWrong){ _hmState.done=true; _hmState.won=false; }
   document.getElementById('app').innerHTML = render(_state);
 }
@@ -8173,6 +8705,8 @@ function renderQFDone(topicId){
     if(!P.gameStats.qf) P.gameStats.qf=[];
     if(total>0){ const now=new Date(); P.gameStats.qf.unshift({date:now.toLocaleDateString('de-DE'),time:now.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),score:s.score,pct,answered:total,topic:topicId}); if(P.gameStats.qf.length>20) P.gameStats.qf.pop(); }
     save();
+    // 1 XP pro richtiger Antwort
+    if(s.score>0){ addXP(s.score); checkBadges(); }
   }
 
   // Overview table of answered questions
@@ -8199,6 +8733,7 @@ function renderQFDone(topicId){
       <p style="font-size:2.5rem">${pct>=80?'🏆':pct>=60?'⭐':'💪'}</p>
       <p style="font-size:1.8rem;font-weight:800;color:#1E293B;margin:.25rem 0">${s.score} ${T('ex_correct_score')}</p>
       <p style="color:#64748B;font-size:.9rem">${T('ex_correct_of')} ${total} · ${pct}%</p>
+      ${s.score>0?`<p style="display:inline-block;background:#F5F3FF;color:#7C3AED;font-weight:800;font-size:.95rem;border-radius:99px;padding:.3rem .9rem;margin-top:.4rem">⭐ +${s.score} XP</p>`:''}
       ${isNewBest&&total>0?`<p style="color:#8B5CF6;font-weight:700;font-size:.9rem;margin-top:.4rem">${T('qf_new_record')}</p>`:''}
       ${total>0?memLeaderboard('qf'):''}
       ${pb(pct, pct>=80?'#10B981':pct>=60?'#F59E0B':'#EF4444')}
@@ -8423,7 +8958,12 @@ function buildSessionItems(minutes){
   const counts = {5:{g:1,v:1,r:1},10:{g:2,v:2,r:1},15:{g:3,v:2,r:1,w:1},20:{g:3,v:3,r:2,w:1}};
   const plan = counts[minutes]||counts[10];
   const items = [];
-  const gTopics = [...GRAMMAR].sort(()=>Math.random()-.5);
+  // Schwerpunkte zuerst: Themen aus dem Sprach-Check und aus "Noch üben"
+  // (P.errors) kommen bevorzugt ins Paket – so schließt die Session Lücken.
+  const focusIds = new Set(assessmentFocus().map(a=>a.id));
+  for(const k in (P.errors||{})){ if(k.indexOf('grammar:')===0) focusIds.add(k.slice(8)); }
+  const gTopics = [...GRAMMAR].sort((a,b)=>
+    ((focusIds.has(b.id)?1:0)-(focusIds.has(a.id)?1:0)) || Math.random()-.5);
   let gCount = 0;
   for(const t of gTopics){
     if(gCount >= (plan.g||2)) break;
@@ -8436,7 +8976,13 @@ function buildSessionItems(minutes){
       gCount++;
     }
   }
-  const vTopics = [...VOCAB].sort(()=>Math.random()-.5).slice(0, plan.v||2);
+  // Fällige Wörter haben Vorrang: ein Wiederholen-Block ersetzt ein Vokabelthema
+  let vSlots = plan.v||2;
+  if(srsDueList().length > 0){
+    items.push({type:'vocab', label:'🔁 ' + T('review_title').replace('🔁 ',''), go:function(){ startReview(); }});
+    vSlots--;
+  }
+  const vTopics = [...VOCAB].sort(()=>Math.random()-.5).slice(0, Math.max(0, vSlots));
   for(const v of vTopics){
     items.push({type:'vocab', label:'🔤 ' + v.title, go:function(){ go('vocab-topic',v.id,'flashcard'); }});
   }
@@ -8630,6 +9176,60 @@ function snoozeBackupNudge(){
   const el = document.getElementById('backup-nudge'); if(el) el.remove();
 }
 
+// ── CHECK-ERINNERUNG ──
+// Nach 6 Wochen ohne Sprach-Check sanft an den Zwischenstand erinnern.
+function checkNudgeHTML(){
+  if(!P.onboarded) return '';
+  const as = P.assessments||[];
+  if(!as.length) return '';
+  const today = new Date().toISOString().slice(0,10);
+  const lastCheck = as[as.length-1].date;
+  if((new Date(today) - new Date(lastCheck)) < 42*86400000) return '';
+  if(P.checkNudge && (new Date(today) - new Date(P.checkNudge)) < 14*86400000) return '';
+  return `<div class="card" id="check-nudge" style="background:#F5F3FF;border-color:#C4B5FD;display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+    <div style="font-size:1.6rem">🧭</div>
+    <div style="flex:1;min-width:12rem">
+      <p style="font-weight:700;color:#4C1D95;font-size:.92rem">${T('check_nudge_title')}</p>
+      <p style="font-size:.8rem;color:#6D28D9">${T('check_nudge_sub')}</p>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn-primary" style="background:#7C3AED" onclick="startOnboarding('check')">${T('ob_check_repeat')}</button>
+      <button class="btn-secondary" style="border-color:#C4B5FD;color:#6D28D9" onclick="snoozeCheckNudge()">${T('backup_nudge_later')}</button>
+    </div>
+  </div>`;
+}
+function snoozeCheckNudge(){
+  P.checkNudge = new Date().toISOString().slice(0,10); save();
+  const el = document.getElementById('check-nudge'); if(el) el.remove();
+}
+
+// Fortschritt exportieren UND direkt eine E-Mail an die Lehrkraft öffnen.
+// mailto kann keine Anhänge mitschicken – die Mail erklärt deshalb,
+// dass die gerade heruntergeladene Datei angehängt werden muss.
+function mailProgress(){
+  const to = (P.teacherEmail||'').trim();
+  if(!to){
+    const sel = document.getElementById('backup-teacher-select');
+    if(sel){ sel.style.display='block'; sel.scrollIntoView({behavior:'smooth',block:'center'}); }
+    showToast(T('backup_mail_pick_teacher'));
+    return;
+  }
+  exportProgress();
+  const d = new Date();
+  const stamp = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const fname = 'english-companion-fortschritt-'+stamp+'.json';
+  const name = P.name || '';
+  const subject = encodeURIComponent('[English Companion] '+T('backup_mail_subject')+(name?' – '+name:''));
+  const body = encodeURIComponent(
+    T('backup_mail_body_1')+'\n\n'+
+    T('backup_mail_body_2')+' '+fname+'\n'+
+    T('backup_mail_body_3')+'\n\n'+
+    (name?T('writing_mail_student')+' '+name+'\n':'')+
+    'Level '+levelInfo().level+' · '+(P.xp||0)+' XP'
+  );
+  setTimeout(()=>{ window.location.href = 'mailto:'+to+'?subject='+subject+'&body='+body; }, 400);
+}
+
 function exportProgress(){
   try{
     P.lastBackup = new Date().toISOString().slice(0,10); save();
@@ -8710,7 +9310,7 @@ function renderLernweg(){
           ${[6,5,4,3,2,1,0].map(i=>{
             const d = new Date(Date.now()-i*86400000).toISOString().slice(0,10);
             const v = (P.xpLog||{})[d]||0;
-            const h = Math.min(100, v/DAILY_GOAL*100);
+            const h = Math.min(100, v/dailyGoal()*100);
             return `<div title="${d}: ${v} XP" style="width:.75rem;height:${Math.max(8,h)}%;background:${v>0?'#10B981':'#E2E8F0'};border-radius:2px"></div>`;
           }).join('')}
         </div>
@@ -8721,7 +9321,7 @@ function renderLernweg(){
       const as = P.assessments||[];
       const last = as[as.length-1];
       const prev = as.length>1 ? as[as.length-2] : null;
-      const topicRows = last ? GRAMMAR.map(t=>{
+      const topicRows = last ? assessmentAreas().map(t=>{
         const r = last.perTopic[t.id]; if(!r||!r.total) return '';
         const tp = Math.round(r.right/r.total*100);
         let trend = '';
@@ -8893,8 +9493,13 @@ function renderLernweg(){
       <p style="font-size:.8rem;color:#94A3B8;margin-bottom:.75rem">${T('backup_desc')}</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
         <button onclick="exportProgress()" style="background:#EFF6FF;color:#1D4ED8;border:none;border-radius:.625rem;padding:.5rem .9rem;font-size:.85rem;font-weight:600;cursor:pointer">${T('backup_export_btn')}</button>
+        <button onclick="mailProgress()" style="background:#ECFDF5;color:#047857;border:none;border-radius:.625rem;padding:.5rem .9rem;font-size:.85rem;font-weight:600;cursor:pointer">${T('backup_mail_btn')}</button>
         <button onclick="document.getElementById('import-file').click()" style="background:#F1F5F9;color:#475569;border:none;border-radius:.625rem;padding:.5rem .9rem;font-size:.85rem;font-weight:600;cursor:pointer">${T('backup_import_btn')}</button>
         <input id="import-file" type="file" accept="application/json,.json" style="display:none" onchange="importProgress(this)">
+      </div>
+      <div id="backup-teacher-select" style="display:${(P.teacherEmail||'').trim()?'none':'block'};margin-top:.6rem;max-width:22rem">
+        <p style="font-size:.78rem;color:#64748B;margin-bottom:.3rem">${T('backup_mail_teacher_hint')}</p>
+        ${teacherSelectHTML(true)}
       </div>
     </div>
 
