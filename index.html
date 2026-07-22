@@ -241,8 +241,18 @@
 // Die SuS sehen die Version unten rechts und bekommen
 // beim ersten Öffnen der neuen Version ein Update-Pop-up.
 // ═══════════════════════════════════════════════
-const APP_VERSION = '2.3.1';
+const APP_VERSION = '2.5';
 const CHANGELOG = [
+  { v:'2.5', date:'2026', items:[
+    'Quick-Fire jetzt auch mit Vokabeln – pro Thema oder alle gemischt. Richtige Antworten zählen in die Boxen.',
+    'Spiele-Seite aufgeräumt: eine Karte pro Spiel mit Themenwahl statt vieler Kacheln.',
+  ]},
+  { v:'2.4', date:'2026', items:[
+    'Unregelmäßige Verben folgen jetzt der Box-Logik: Quiz, Schreiben und Karteikarten zählen in die Fächer, fällige Verben erscheinen beim Wiederholen.',
+    'Wortsuche: Unregelmäßige Verben sind jetzt als Thema auswählbar.',
+    'Fragen wie Did you...? werden jetzt richtig eingefärbt (Hilfsverb am Satzanfang).',
+    'Sprachwechsel-Lücken geschlossen (Verb-Muster, Listening-Tipps, Klassen-Labels).',
+  ]},
   { v:'2.3.1', date:'2026', items:[
     'Verneinungen noch klarer: didn\'t = did (Hilfsverb, orange) + n\'t (roter Marker) – wie beim gelben Endungs-Marker.',
   ]},
@@ -2140,6 +2150,11 @@ function save(){ localStorage.setItem(SK, JSON.stringify(P)); }
 // ── LANGUAGE / i18n ─────────────────────────────────────────────
 const i18n = {
   de: {
+    qf_vocab_mixed:'Vokabeln – alle Themen gemischt',
+    games_pick_topic:'… oder Thema wählen', games_play:'Spielen', games_random:'Zufallsthema',
+    games_topic_ingame:'Das Thema wechselst du direkt im Spiel.',
+    games_memory_desc:'Finde die Paare: Englisch ↔ Deutsch.',
+    games_quiz_corner:'Quiz-Ecke', games_quiz_corner_desc:'Verben und Wortarten trainieren.',
     vocab_k7:'Klasse 7', ob_cls7_hint:'Klasse 7 = Wiederholungsjahr: Alle Inhalte sind von Anfang an frei.',
     nav_review:'Wiederholen',
     path_title:'Dein Lernweg', path_next:'Empfohlen für dich', path_continue:'Weitermachen mit:', path_all:'Alle Themen anzeigen',
@@ -2256,13 +2271,13 @@ const i18n = {
     irreg_patterns_title:'🧠 Lernmuster & Tricks', irreg_learned:'gelernt',
     irreg_back:'← Vokabeln',
     pat_same_title:'Unveränderlich (alle 3 gleich)',
-    pat_same_hint:'These verbs do not change at all! With "read" only the pronunciation changes (/riːd/ → /red/).',
+    pat_same_hint:'Diese Verben verändern sich gar nicht! Bei "read" ändert sich nur die Aussprache (/riːd/ → /red/).',
     pat_echo_title:'Echo-Wörter (Past = PP)',
     pat_echo_hint:'Simple Past und Past Participle sind gleich – du musst dir nur eine Form merken!',
     pat_iau_title:'Vokalwechsel i → a → u',
     pat_iau_hint:'Der Vokal wandert: i → a → u. begin, drink, run, swim folgen diesem Muster.',
     pat_other_title:'Besonders merken',
-    pat_other_hint:'These verbs follow no simple pattern. Learn them one by one!',
+    pat_other_hint:'Diese Verben folgen keinem einfachen Muster. Lerne sie einzeln auswendig!',
     vocab_how_many:'Wie viele Karten?', vocab_how_many_sub:'Zufällige Wörter aus allen Themen, DE↔EN gemischt. Karte umdrehen, dann selbst bewerten.',
     vocab_all_learned:'Alle als gelernt markieren', vocab_to_list:'Zur Liste',
     vocab_tab_list:'📋 Liste', vocab_tab_fc:'🃏 Karteikarten', vocab_tab_write:'✏️ Schreiben',
@@ -2406,10 +2421,10 @@ const i18n = {
     reading_pre_default_a1:'Schau dir den Titel an. Was denkst du: Worum könnte es gehen? Was weißt du schon über das Thema?',
     reading_pre_default_a2:'Schau dir den Titel an. Was erwartest du? Was weißt du schon über das Thema?',
     reading_done_all:'Alle Texte',
-    listening_hint:'💡 <strong>Tip:</strong> Read the dialogue first, then answer the questions from memory.',
+    listening_hint:'💡 <strong>Tipp:</strong> Lies zuerst den Dialog, dann beantworte die Fragen aus dem Gedächtnis.',
     listening_vocab_heading:'📖 Neue Vokabeln',
     listening_read_dialog:'Dialog lesen →',
-    listening_script_hint:'Read the dialogue again without looking, then answer the questions.',
+    listening_script_hint:'Lies den Dialog noch einmal, ohne zu spicken – und beantworte dann die Fragen.',
     listening_to_tasks:'Zu den Aufgaben →',
     listening_tasks_heading:'Aufgaben',
     listening_read_again:'Dialog noch einmal lesen',
@@ -2516,6 +2531,11 @@ const i18n = {
     ex_next:'Weiter →', vocab_result_label:'Ergebnis',
   },
   en1: {
+    qf_vocab_mixed:'Vocabulary – all topics mixed',
+    games_pick_topic:'… or pick a topic', games_play:'Play', games_random:'Random topic',
+    games_topic_ingame:'You can change the topic in the game.',
+    games_memory_desc:'Find the pairs: English ↔ German.',
+    games_quiz_corner:'Quiz corner', games_quiz_corner_desc:'Practise verbs and word classes.',
     vocab_k7:'Class 7', ob_cls7_hint:'Class 7 = revision year: everything is open from the start.',
     nav_review:'Review',
     path_title:'Your learning path', path_next:'Recommended for you', path_continue:'Continue with:', path_all:'Show all topics',
@@ -2579,7 +2599,7 @@ const i18n = {
     home_timer_sub:'Pick a time and get a fun mix of grammar, vocabulary and reading!',
     home_timer_min:'min.',
     vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Learn new words with flashcards and quizzes!', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
-    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Basic Words', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
+    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Class 5', vocab_k6:'Class 6', vocab_basics:'Basic Words', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
     grammar_title:'📚 Grammar', grammar_sub:'Learn the rules and practise!',
     grammar_rules_de:'🇩🇪 Auf Deutsch', grammar_rules_en:'🇬🇧 In English',
     grammar_examples:'Examples', grammar_mistakes:'Common Mistakes',
@@ -2875,6 +2895,11 @@ const i18n = {
     pwa_offline_note:'After installing, you can open English Companion like a real app – even without internet!'
   },
   en2: {
+    qf_vocab_mixed:'Vocabulary – all topics mixed',
+    games_pick_topic:'… or choose a topic', games_play:'Play', games_random:'Random topic',
+    games_topic_ingame:'You can switch topics inside the game.',
+    games_memory_desc:'Find the pairs: English ↔ German.',
+    games_quiz_corner:'Quiz corner', games_quiz_corner_desc:'Practise verbs and word classes.',
     vocab_k7:'Class 7', ob_cls7_hint:'Class 7 = revision year: all content is available from the start.',
     nav_review:'Review',
     path_title:'Your learning path', path_next:'Recommended for you', path_continue:'Continue with:', path_all:'Show all topics',
@@ -2938,7 +2963,7 @@ const i18n = {
     home_timer_sub:'Select a duration and receive a mixed set of grammar, vocabulary and reading exercises.',
     home_timer_min:'min.',
     vocab_title:'🔤 Vocabulary', vocab_intro:'<strong>Core vocabulary</strong> are the most important words for each topic, sorted by Year 5 and 6. <strong>Modules</strong> add extra words from the SOUL modules that are not already in the core vocabulary. Use the filters to choose.', vocab_sub:'Build your word bank with flashcards, quizzes and writing tasks.', nav_dict:'Dictionary Skills', dict_title:'Using a Dictionary', dict_page_sub:'How to use a dictionary the right way.', dict_sub:'How to find words in a dictionary.', dict_to_vocab:'Back to vocabulary', vsearch_ph:'Search a word (English or German)…', vsearch_hits:'results', vsearch_none:'No results.', vocab_print:'Print', vocab_print_back:'Back', vocab_print_blocked:'Please allow pop-ups to print the list.',
-    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Year 5', vocab_k6:'Year 6', vocab_basics:'Core Vocabulary', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
+    vocab_filter:'Filter', vocab_all:'All', vocab_k5:'Class 5', vocab_k6:'Class 6', vocab_basics:'Core Vocabulary', vocab_onlysoul5:'SOUL 5', vocab_onlysoul6:'SOUL 6',
     grammar_title:'📚 Grammar', grammar_sub:'Explanations, exercises and quizzes.',
     grammar_rules_de:'🇩🇪 In German', grammar_rules_en:'🇬🇧 In English',
     grammar_examples:'Examples', grammar_mistakes:'Common Mistakes',
@@ -3432,9 +3457,18 @@ const SRS_INTERVALS = [0, 1, 3, 7, 14, 30]; // Tage bis zur Wiederholung, Index 
 
 function srsAddDays(n){ return new Date(Date.now()+n*86400000).toISOString().slice(0,10); }
 
+// Auch die unregelmäßigen Verben folgen der Box-Logik ('irreg' als Pseudo-Thema)
+function srsWordList(topicId){
+  if(topicId==='irreg') return IRREG;
+  const t = VOCAB.find(v=>v.id===topicId);
+  return t ? t.words : null;
+}
 function srsUpdate(topicId, wordRef, correct){
-  const t = VOCAB.find(v=>v.id===topicId); if(!t) return;
-  const idx = t.words.indexOf(wordRef); if(idx < 0) return;
+  const list = srsWordList(topicId); if(!list) return;
+  const idx = list.indexOf(wordRef); if(idx < 0) return;
+  srsUpdateAt(topicId, idx, correct);
+}
+function srsUpdateAt(topicId, idx, correct){
   if(!P.srs) P.srs = {};
   const k = topicId+':'+idx;
   const e = P.srs[k] || {b:0};
@@ -3444,14 +3478,19 @@ function srsUpdate(topicId, wordRef, correct){
   // Klare Regel: Fach 5 erreicht (5× richtig über Tage verteilt) =
   // Wort sitzt → automatisch als gelernt (✅) abhaken.
   if(e.b === 5){
-    if(!P.vocab[topicId]) P.vocab[topicId] = {known:[]};
-    if(!P.vocab[topicId].known) P.vocab[topicId].known = [];
-    if(!P.vocab[topicId].known.includes(idx)) P.vocab[topicId].known.push(idx);
+    if(topicId==='irreg'){
+      if(!P.irreg) P.irreg = [];
+      if(!P.irreg.includes(idx)) P.irreg.push(idx);
+    } else {
+      if(!P.vocab[topicId]) P.vocab[topicId] = {known:[]};
+      if(!P.vocab[topicId].known) P.vocab[topicId].known = [];
+      if(!P.vocab[topicId].known.includes(idx)) P.vocab[topicId].known.push(idx);
+    }
   }
   save();
 }
 
-// Alle heute (oder früher) fälligen Wörter
+// Alle heute (oder früher) fälligen Wörter (inkl. unregelmäßiger Verben)
 function srsDueList(){
   if(!P.srs) return [];
   const today = new Date().toISOString().slice(0,10);
@@ -3461,8 +3500,14 @@ function srsDueList(){
     if(!e || !e.d || e.d > today) continue;
     const ci = k.lastIndexOf(':');
     const topicId = k.slice(0,ci), idx = parseInt(k.slice(ci+1),10);
-    const t = VOCAB.find(v=>v.id===topicId);
-    const w = t && t.words[idx];
+    let w = null;
+    if(topicId==='irreg'){
+      const v = IRREG[idx];
+      if(v) w = {en:'to '+v.inf, de:v.de, _irregForms:v.past+' – '+v.pp};
+    } else {
+      const t = VOCAB.find(v=>v.id===topicId);
+      w = t && t.words[idx];
+    }
     if(w) due.push({topicId, idx, w, box:e.b||1});
   }
   return due;
@@ -3475,14 +3520,22 @@ function startReview(){
   const due = [...srsDueList()].sort(()=>Math.random()-.5).slice(0,15);
   // Optionen pro Frage einmal vorbereiten (nicht bei jedem Rendern neu mischen)
   const items = due.map(d=>{
-    const t = VOCAB.find(v=>v.id===d.topicId);
+    let pool, topicTitle;
+    if(d.topicId==='irreg'){
+      pool = IRREG.map(v=>({en:'to '+v.inf, de:v.de}));
+      topicTitle = T('nav_irreg');
+    } else {
+      const t = VOCAB.find(v=>v.id===d.topicId);
+      pool = t.words;
+      topicTitle = t.title;
+    }
     const seenDe = new Set([d.w.de]);
-    const wrong = [...t.words].sort(()=>Math.random()-.5).filter(x=>{
+    const wrong = [...pool].sort(()=>Math.random()-.5).filter(x=>{
       if(x.en===d.w.en || seenDe.has(x.de)) return false;
       seenDe.add(x.de); return true;
     }).slice(0,3);
     const opts = [...wrong.map(x=>x.de), d.w.de].sort(()=>Math.random()-.5);
-    return {...d, opts, correct: opts.indexOf(d.w.de), topicTitle: t.title};
+    return {...d, opts, correct: opts.indexOf(d.w.de), topicTitle};
   });
   _rev = {items, idx:0, score:0, done:false, answered:false};
   go('review');
@@ -3549,7 +3602,7 @@ function revPick(oi){
   const it = _rev.items[_rev.idx];
   const right = oi === it.correct;
   if(right) _rev.score++;
-  srsUpdate(it.topicId, it.w, right);
+  srsUpdateAt(it.topicId, it.idx, right);
   document.querySelectorAll('#rev-opts .opt-btn').forEach(b=>b.disabled=true);
   const btn = document.getElementById('revopt-'+oi);
   if(btn) btn.className = right?'opt-btn opt-correct':'opt-btn opt-wrong';
@@ -3560,7 +3613,7 @@ function revPick(oi){
   const fb = document.getElementById('rev-feedback');
   if(fb) fb.innerHTML = (right
     ? `<div class="feedback-ok">${T('feedback_ok')} ${it.box<5?T('review_box_up'):''}</div>`
-    : `<div class="feedback-err">${T('feedback_wrong')} <strong>${it.w.de}</strong><br><span style="font-size:.82rem">${T('review_box_down')}</span></div>`)
+    : `<div class="feedback-err">${T('feedback_wrong')} <strong>${it.w.de}</strong>${it.w._irregForms?` <span style="font-size:.82rem;color:#B45309">(${it.w._irregForms})</span>`:''}<br><span style="font-size:.82rem">${T('review_box_down')}</span></div>`)
     + `<button class="btn-primary" style="margin-top:.75rem" onclick="revNext()">${_rev.idx+1<_rev.items.length?T('btn_next'):T('ex_show_result')}</button>`;
 }
 
@@ -4922,7 +4975,7 @@ function colorSentence(s, topicId){
     s = s.replace(/\b(can|won|shan)('t)/gi,
       '<span style="color:#F97316;font-weight:700">$1</span><span style="background:#FECACA;color:#7F1D1D;border-radius:3px;padding:0 2px;font-weight:700">$2</span>');
   }
-  if(f.aux) s = s.replace(/\b(did|does|do|was|were|is|are|am|will|can|could|would|should|shall|must|have|has|had)\b/g,
+  if(f.aux) s = s.replace(/\b(did|does|do|was|were|is|are|am|will|can|could|would|should|shall|must|have|has|had)\b/gi,
     w => '<span style="color:#F97316;font-weight:700">'+w+'</span>');
   if(f.wh) s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
     '<span style="color:#8B5CF6;font-weight:700">$1</span>');
@@ -4960,7 +5013,7 @@ function colorExpl(s){
   s = s.replace(/\b(What|Where|When|Who|How|Why|Which)\b/g,
     '<span style="color:#8B5CF6;font-weight:700">$1</span>');
   s = s.replace(/\b(not)\b/g, '<span style="color:#EF4444;font-weight:700">not</span>');
-  s = s.replace(/\b(do\/does|did|do|does|am\/is\/are|am|is|are|was\/were|was|were|will|have|has|had|can|could|would|should|shall|must)\b/g,
+  s = s.replace(/\b(do\/does|did|do|does|am\/is\/are|am|is|are|was\/were|was|were|will|have|has|had|can|could|would|should|shall|must)\b/gi,
     w => '<span style="color:#F97316;font-weight:700">'+w+'</span>');
   s = s.replace(/(\w+)(ied)\b/g,
     '<span style="color:#10B981;font-weight:700">$1</span><span style="background:#FEF08A;color:#713F12;border-radius:3px;padding:0 2px;font-weight:700">ied</span>');
@@ -5976,7 +6029,7 @@ function renderVocabTopic(id, mode){
     <div style="border-top:1px solid #F1F5F9;padding-top:1rem;margin-top:.5rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
       <span style="font-size:.75rem;color:#94A3B8;font-weight:600">${T('vocab_games')}</span>
       ${t.words.length>=4?`<button onclick="go('vocab-memory','${id}')" style="padding:.35rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#EFF6FF;color:#1D4ED8">🃏 Memory</button>`:''}
-      <button onclick="go('grammar-quickfire','mixed')" style="padding:.35rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FDF4FF;color:#6B21A8">⚡ Quick-Fire</button>
+      <button onclick="go('grammar-quickfire','v:${id}')" style="padding:.35rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#FDF4FF;color:#6B21A8">⚡ Quick-Fire</button>
       <button onclick="go('spiele')" style="padding:.35rem .75rem;border-radius:.625rem;font-size:.8rem;font-weight:600;cursor:pointer;border:none;background:#F1F5F9;color:#475569">${T('vocab_all_games')}</button>
     </div>
   </div>`;
@@ -6714,7 +6767,10 @@ function renderIrregList(known){
               <span>${v.pp}</span>${speakBtn(escQ(v.pp))}
             </span>
 
-            <span onclick="toggleIrreg(${i})" style="color:#64748B;font-size:.8rem;cursor:pointer;padding:.3rem 0">${v.de}</span>`;
+            <span onclick="toggleIrreg(${i})" style="color:#64748B;font-size:.8rem;cursor:pointer;padding:.3rem 0">${v.de}${(()=>{
+              const e=(P.srs||{})['irreg:'+i]; const b=e?(e.b||0):0;
+              return b>0?` <span title="${T('review_box')} ${b}/5" style="font-size:.6rem;font-weight:800;color:${b>=4?'#059669':'#0369A1'};background:${b>=4?'#ECFDF5':'#F0F9FF'};border:1px solid ${b>=4?'#6EE7B7':'#BAE6FD'};border-radius:99px;padding:.05rem .35rem;white-space:nowrap">${b}/5</span>`:'';
+            })()}</span>`;
         }).join('')}
       </div>
     </div>
@@ -6735,6 +6791,8 @@ function toggleIrregFC(origIdx){
   if(!P.irreg) P.irreg = [];
   const pos = P.irreg.indexOf(origIdx);
   if(pos>=0) P.irreg.splice(pos,1); else P.irreg.push(origIdx);
+  // Box-Logik: Selbsteinschätzung auf der Karteikarte zählt (wie bei Vokabeln)
+  srsUpdateAt('irreg', origIdx, pos<0);
   checkBadges(); save();
   go('irreg','flashcard');
 }
@@ -6844,6 +6902,9 @@ function pickIrMC(oi, chosen, correct){
   if(!isRight) document.querySelectorAll('#irmc-opts .opt-btn').forEach(b=>{ if(b.textContent.trim()===correct) b.className='opt-btn opt-correct'; });
   if(isRight) _irMC.score++;
   _irMC.answers.push({right:isRight});
+  // Box-Logik: auch das Verb-Quiz zählt in die Wiederholungs-Fächer
+  const _irPoolMC = _irShuffled.length ? _irShuffled : IRREG;
+  srsUpdate('irreg', _irPoolMC[_irMC.idx], isRight);
   const fb = document.getElementById('irmc-fb');
   fb.innerHTML = (isRight?`<div class="feedback-ok">${T('feedback_ok')}</div>`:`<div class="feedback-err">${T('feedback_wrong')} <strong>${correct}</strong></div>`)
     + `<button class="btn-primary" style="margin-top:.75rem;background:#F59E0B" onclick="nextIrMC()">${_irMC.idx<29?T('btn_next'):T('ex_show_result')}</button>`;
@@ -6904,6 +6965,8 @@ function checkIrWrite(){
   _irWr.ppOk = pp.toLowerCase()===(v.pp||'').toLowerCase();
   if(_irWr.pastOk && _irWr.ppOk) _irWr.score++;
   _irWr.checked = true;
+  // Box-Logik: Schreiben zählt in die Wiederholungs-Fächer
+  srsUpdate('irreg', v, _irWr.pastOk && _irWr.ppOk);
   go('irreg','write');
 }
 function nextIrWrite(){
@@ -7965,58 +8028,65 @@ function renderSpiele(){
     </div>
     <p style="color:#64748B">${T('games_sub')}</p>
 
-    <div>
-      <p style="font-size:.78rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">⚡ Quick-Fire – Grammar</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem">
-        <div onclick="go('grammar-quickfire','mixed')" class="card" style="cursor:pointer;background:linear-gradient(135deg,#FDF4FF,#EFF6FF);border-color:#C4B5FD;padding:1rem">
-          <div style="font-size:2rem;margin-bottom:.3rem">🎲</div>
-          <h3 style="font-weight:700;color:#1E293B;font-size:.95rem;margin-bottom:.2rem">${T('games_mixed_qs_label')}</h3>
-          <p style="font-size:.8rem;color:#64748B">${T('games_mixed_qs_desc')}</p>
-        </div>
-        ${GRAMMAR.map(t=>`<div onclick="go('grammar-quickfire','${t.id}')" class="card" style="cursor:pointer;background:#FDF4FF;border-color:#E9D5FF;padding:1rem">
-          <div style="font-size:1.6rem;margin-bottom:.3rem">⚡</div>
-          <h3 style="font-weight:700;color:#6B21A8;font-size:.9rem;margin-bottom:.2rem">${t.title}</h3>
-          <p style="font-size:.75rem;color:#94A3B8">${t.level}</p>
-        </div>`).join('')}
-      </div>
-    </div>
+    ${(()=>{
+      // Eine Karte pro Spiel: großes Icon, kurze Beschreibung, Themenwahl
+      // direkt auf der Karte – statt einer Kachel pro Thema.
+      const memTopics = VOCAB.filter(t=>t.words.length>=4);
+      const selStyle = 'width:100%;margin-top:.6rem;padding:.45rem .6rem;border-radius:.6rem;font-size:.82rem;border:1.5px solid #E2E8F0;background:#fff;cursor:pointer;box-sizing:border-box';
+      const gameCard = (emoji, bg, border, titleColor, title, desc, body) => `
+        <div class="card" style="background:${bg};border-color:${border};padding:1.1rem 1.25rem;display:flex;flex-direction:column">
+          <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.25rem">
+            <span style="font-size:2rem;flex-shrink:0">${emoji}</span>
+            <div style="min-width:0">
+              <h3 style="font-weight:800;color:${titleColor};font-size:1rem">${title}</h3>
+              <p style="font-size:.78rem;color:#64748B">${desc}</p>
+            </div>
+          </div>
+          <div style="margin-top:auto">${body}</div>
+        </div>`;
+      const vocabOpts = memTopics.map(t=>`<option value="${t.id}">${t.emoji} ${vocabTitle(t)}</option>`).join('');
+      return `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:.9rem">
 
-    <div>
-      <p style="font-size:.78rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">🃏 ${T('games_memory_vocab_label')}</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem">
-        ${VOCAB.filter(t=>t.words.length>=4).map(t=>`<div onclick="go('vocab-memory','${t.id}')" class="card" style="cursor:pointer;background:#EFF6FF;border-color:#BFDBFE;padding:.75rem 1rem">
-          <span style="font-size:1.4rem">${t.emoji}</span>
-          <p style="font-weight:700;color:#1D4ED8;font-size:.88rem;margin:.2rem 0">${t.title.split('–').pop().trim()}</p>
-          <p style="font-size:.75rem;color:#64748B">${t.words.length} ${T('label_words')}</p>
-        </div>`).join('')}
-      </div>
-    </div>
+        ${gameCard('⚡','linear-gradient(135deg,#FDF4FF,#F5F3FF)','#C4B5FD','#6B21A8', 'Quick-Fire', T('qf_sub'), `
+          <div style="display:flex;gap:.5rem">
+            <button onclick="go('grammar-quickfire','mixed')" style="flex:1;padding:.5rem;border-radius:.6rem;border:none;background:#7C3AED;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">📚 ${T('label_grammar')}</button>
+            <button onclick="go('grammar-quickfire','v:mixed')" style="flex:1;padding:.5rem;border-radius:.6rem;border:none;background:#8B5CF6;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">🔤 ${T('label_vocab')}</button>
+          </div>
+          <select onchange="if(this.value)go('grammar-quickfire',this.value);this.selectedIndex=0" style="${selStyle}">
+            <option value="">${T('games_pick_topic')}</option>
+            <optgroup label="📚 ${T('label_grammar')}">${GRAMMAR.map(t=>`<option value="${t.id}">${t.title}</option>`).join('')}</optgroup>
+            <optgroup label="🔤 ${T('label_vocab')}">${memTopics.map(t=>`<option value="v:${t.id}">${t.emoji} ${vocabTitle(t)}</option>`).join('')}</optgroup>
+          </select>`)}
 
-    <div>
-      <p style="font-size:.78rem;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem">🔍 Word Search & Irregular Verbs</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem">
-        <div onclick="go('wordsearch')" class="card" style="cursor:pointer;background:#F0FDF4;border-color:#6EE7B7;padding:1rem">
-          <div style="font-size:2rem;margin-bottom:.3rem">🔍</div>
-          <h3 style="font-weight:700;color:#065F46;font-size:.95rem;margin-bottom:.2rem">${T('ws_title')}</h3>
-          <p style="font-size:.8rem;color:#64748B">${T('games_ws_desc')}</p>
-        </div>
-        <div onclick="go('hangman')" class="card" style="cursor:pointer;background:#FFF7ED;border-color:#FED7AA;padding:1rem">
-          <div style="font-size:2rem;margin-bottom:.3rem">🎯</div>
-          <h3 style="font-weight:700;color:#92400E;font-size:.95rem;margin-bottom:.2rem">${T('hm_title')}</h3>
-          <p style="font-size:.8rem;color:#64748B">${T('games_hm_desc')}</p>
-        </div>
-        <div onclick="go('irreg','mc')" class="card" style="cursor:pointer;background:#FFFBEB;border-color:#FDE68A;padding:1rem">
-          <div style="font-size:2rem;margin-bottom:.3rem">🧪</div>
-          <h3 style="font-weight:700;color:#92400E;font-size:.95rem;margin-bottom:.2rem">Irregular Verb Quiz</h3>
-          <p style="font-size:.8rem;color:#64748B">${T('games_irreg_quiz_desc')}</p>
-        </div>
-        <div onclick="go('irreg','flashcard')" class="card" style="cursor:pointer;background:#FFF7ED;border-color:#FED7AA;padding:1rem">
-          <div style="font-size:2rem;margin-bottom:.3rem">🃏</div>
-          <h3 style="font-weight:700;color:#92400E;font-size:.95rem;margin-bottom:.2rem">${T('games_verb_cards_label')}</h3>
-          <p style="font-size:.8rem;color:#64748B">${T('games_verb_cards_desc')}</p>
-        </div>
-      </div>
-    </div>
+        ${gameCard('🃏','#EFF6FF','#BFDBFE','#1D4ED8', 'Memory', T('games_memory_desc'), `
+          <div style="display:flex;gap:.5rem">
+            <button onclick="goMemory(['${memTopics.map(t=>t.id).join("','")}'][Math.floor(Math.random()*${memTopics.length})])" style="flex:1;padding:.5rem;border-radius:.6rem;border:none;background:#3B82F6;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">🎲 ${T('games_random')}</button>
+            <button onclick="startIrregMemory('irr2')" style="flex:1;padding:.5rem;border-radius:.6rem;border:none;background:#F59E0B;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">📋 ${T('nav_irreg')}</button>
+          </div>
+          <select onchange="if(this.value)goMemory(this.value);this.selectedIndex=0" style="${selStyle}">
+            <option value="">${T('games_pick_topic')}</option>${vocabOpts}
+          </select>`)}
+
+        ${gameCard('🔍','#F0FDF4','#6EE7B7','#065F46', T('ws_title'), T('games_ws_desc'), `
+          <button onclick="go('wordsearch')" style="width:100%;padding:.5rem;border-radius:.6rem;border:none;background:#10B981;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">▶ ${T('games_play')}</button>
+          <p style="font-size:.7rem;color:#94A3B8;margin-top:.4rem">${T('games_topic_ingame')}</p>`)}
+
+        ${gameCard('🎯','#FFF7ED','#FED7AA','#92400E', T('hm_title'), T('games_hm_desc'), `
+          <button onclick="go('hangman','mixed')" style="width:100%;padding:.5rem;border-radius:.6rem;border:none;background:#F97316;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer">▶ ${T('games_play')}</button>
+          <select onchange="if(this.value){startHangman(this.value);go('hangman',this.value);}this.selectedIndex=0" style="${selStyle}">
+            <option value="">${T('games_pick_topic')}</option>
+            <option value="irreg">📋 ${T('nav_irreg')}</option>${vocabOpts}
+          </select>`)}
+
+        ${gameCard('🧪','#FFFBEB','#FDE68A','#92400E', T('games_quiz_corner'), T('games_quiz_corner_desc'), `
+          <div style="display:flex;flex-direction:column;gap:.4rem">
+            <button onclick="go('irreg','mc')" style="padding:.45rem;border-radius:.6rem;border:1.5px solid #FDE68A;background:#fff;color:#92400E;font-size:.8rem;font-weight:700;cursor:pointer;text-align:left">🧪 Irregular Verb Quiz</button>
+            <button onclick="go('irreg','flashcard')" style="padding:.45rem;border-radius:.6rem;border:1.5px solid #FDE68A;background:#fff;color:#92400E;font-size:.8rem;font-weight:700;cursor:pointer;text-align:left">🃏 ${T('games_verb_cards_label')}</button>
+            <button onclick="startWAQuiz()" style="padding:.45rem;border-radius:.6rem;border:1.5px solid #FDE68A;background:#fff;color:#92400E;font-size:.8rem;font-weight:700;cursor:pointer;text-align:left">🔤 ${T('wa_title').replace('🔤 ','')}</button>
+          </div>`)}
+
+      </div>`;
+    })()}
 
     ${(()=>{
       const gs = P.gameStats||{};
@@ -8137,6 +8207,7 @@ function renderWordSearch(topicId){
           <button onclick="buildWordSearch(_wsTopicId);go('wordsearch',_wsTopicId)" style="background:#EF4444;color:#fff;border:none;border-radius:.5rem;padding:.4rem .8rem;font-size:.82rem;cursor:pointer">${T('mem_new')}</button>
           <select onchange="buildWordSearch(this.value);go('wordsearch',this.value)" style="padding:.35rem .6rem;border-radius:.5rem;font-size:.8rem;border:1px solid #E2E8F0;background:#fff;cursor:pointer">
             <option value="mixed" ${_wsTopicId==='mixed'?'selected':''}>${T('hm_mixed')}</option>
+            <option value="irreg" ${_wsTopicId==='irreg'?'selected':''}>📋 ${T('nav_irreg')}</option>
             ${VOCAB.filter(t=>t.words.filter(w=>w.en&&!/\s/.test(w.en.replace(/^to /,''))&&w.en.replace(/^to /,'').length>=3).length>=5).map(t=>`<option value="${t.id}" ${_wsTopicId===t.id?'selected':''}>${t.emoji} ${t.title.split('–').pop().trim()}</option>`).join('')}
           </select>
         </div>
@@ -8621,7 +8692,24 @@ function renderHangman(topicId){
 let _qfState = {queue:[], qIdx:0, score:0, answered:0, history:[], time:60, timer:null, done:false, topicId:null, started:false};
 
 function buildQFQueue(topicId){
-  // Gather all MC questions from pool; shuffle; cycle infinitely via qIdx modulo
+  // Vokabel-Modus: 'v:mixed' (alle Themen) oder 'v:<topicId>' –
+  // Frage = englisches Wort, Antworten = 4 deutsche Bedeutungen.
+  if(topicId && topicId.indexOf('v:')===0){
+    const vid = topicId.slice(2);
+    const topics = vid==='mixed' ? VOCAB.filter(t=>t.words.length>=4) : VOCAB.filter(t=>t.id===vid);
+    const pairs = [];
+    topics.forEach(t=>t.words.forEach(w=>pairs.push({t,w})));
+    for(let i=pairs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pairs[i],pairs[j]]=[pairs[j],pairs[i]];}
+    return pairs.slice(0,60).map(({t,w})=>{
+      const seenDe = new Set([w.de]);
+      const wrong = [...t.words].sort(()=>Math.random()-.5).filter(x=>{
+        if(x.en===w.en || seenDe.has(x.de)) return false; seenDe.add(x.de); return true;
+      }).slice(0,3);
+      const opts = [...wrong.map(x=>x.de), w.de].sort(()=>Math.random()-.5);
+      return {q: w.en, opts, correct: opts.indexOf(w.de), _vTopic: t.id, _vWord: w};
+    }).filter(q=>q.opts.length===4);
+  }
+  // Grammatik: alle MC-Fragen aus dem Pool
   const pool = topicId==='mixed'
     ? Object.values(GRAMMAR_POOL).flat()
     : (GRAMMAR_POOL[topicId]||[]);
@@ -8629,6 +8717,18 @@ function buildQFQueue(topicId){
   // Shuffle
   for(let i=allQ.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[allQ[i],allQ[j]]=[allQ[j],allQ[i]];}
   return allQ;
+}
+// Titel für den Start-/Ergebnisbildschirm des Quick-Fire
+function qfTopicTitle(topicId){
+  if(topicId==='mixed') return T('qf_mixed_title');
+  if(topicId && topicId.indexOf('v:')===0){
+    const vid = topicId.slice(2);
+    if(vid==='mixed') return T('qf_vocab_mixed');
+    const t = VOCAB.find(v=>v.id===vid);
+    return t ? t.emoji+' '+vocabTitle(t) : T('qf_vocab_mixed');
+  }
+  const g = GRAMMAR.find(g=>g.id===topicId);
+  return g ? g.title : 'Quick-Fire';
 }
 
 function renderGrammarQuickfire(topicId){
@@ -8668,7 +8768,7 @@ function renderGrammarQuickfire(topicId){
 }
 
 function renderQFReady(topicId){
-  const t = topicId==='mixed' ? {title:T('qf_mixed_title')} : GRAMMAR.find(g=>g.id===topicId);
+  const t = {title: qfTopicTitle(topicId)};
   // Show best score if available
   const best = (P.qfBest||{})[topicId];
   const bestHTML = best ? `<p style="font-size:.85rem;color:#8B5CF6;margin-bottom:1rem">${T('qf_best_pre')}<strong>${best.score} ${T('ex_correct_score')}</strong>${T('qf_best_post')}</p>` : '';
@@ -8765,6 +8865,8 @@ function qfPick(oi){
   if(right) s.score++;
   s.answered++;
   s.history.push({q:q.q, chosen:q.opts[oi], correctText:q.opts[q.correct], right});
+  // Vokabel-Quick-Fire zählt in die Wiederholungs-Boxen
+  if(q._vWord) srsUpdate(q._vTopic, q._vWord, right);
   s.qIdx++;
   // If we've gone through all questions, reshuffle for next cycle
   if(s.qIdx>0 && s.qIdx % s.queue.length === 0){
