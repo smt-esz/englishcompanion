@@ -29,13 +29,53 @@
   .stat b { font-size: 1.2rem; display: block; }
   .stat span { font-size: .72rem; color: #64748B; }
   .hint { font-size: .78rem; color: #94A3B8; margin-top: 1rem; }
-  @media print { #drop, .hint { display: none; } body { padding: 0; } }
+  @media print { #drop, .hint, #maker { display: none; } body { padding: 0; } }
+  /* Aufgaben-Link erstellen */
+  #maker { background: #fff; border: 1px solid #E2E8F0; border-radius: 1rem; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.07); }
+  #maker h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: .2rem; }
+  #maker label { font-size: .75rem; font-weight: 700; color: #475569; display: block; margin-bottom: .25rem; }
+  #maker input[type=text], #maker input[type=date], #maker input[type=search], #maker input[type=url] { width: 100%; border: 1.5px solid #CBD5E1; border-radius: .6rem; padding: .5rem .7rem; font-size: .9rem; font-family: inherit; }
+  .mk-grid { display: grid; grid-template-columns: 2fr 1fr; gap: .75rem; margin: .9rem 0; }
+  .mk-lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: .75rem; margin-top: .6rem; }
+  .mk-list { border: 1px solid #E2E8F0; border-radius: .75rem; overflow: hidden; }
+  .mk-list h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; background: #F1F5F9; padding: .45rem .7rem; color: #334155; }
+  .mk-list div { max-height: 14rem; overflow-y: auto; padding: .3rem .4rem; }
+  #maker .mk-item { display: flex; align-items: center; gap: .5rem; padding: .3rem .35rem; border-radius: .4rem; font-size: .85rem; font-weight: 400; color: #1E293B; margin: 0; cursor: pointer; }
+  .mk-item:hover { background: #F8FAFC; }
+  .mk-item small { color: #94A3B8; margin-left: auto; white-space: nowrap; }
+  #mk-out { margin-top: 1rem; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: .75rem; padding: .8rem; display: none; }
+  #mk-out textarea { width: 100%; border: 1px solid #BFDBFE; border-radius: .5rem; padding: .5rem; font-size: .8rem; font-family: ui-monospace, Consolas, monospace; resize: vertical; min-height: 4.2rem; word-break: break-all; }
+  .mk-btn { background: #2563EB; color: #fff; border: none; border-radius: .6rem; padding: .5rem 1rem; font-weight: 700; font-size: .85rem; cursor: pointer; margin-top: .5rem; }
+  .mk-btn.ghost { background: #fff; color: #2563EB; border: 1.5px solid #BFDBFE; }
+  .pill.ok { background: #DCFCE7; color: #166534; }
+  @media (max-width: 40rem) { .mk-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📊 English Companion – Klassenübersicht</h1>
   <p class="sub">Lade die Fortschritts-Exporte deiner Schüler (JSON-Dateien aus „My Progress → Fortschritt sichern"). Alles bleibt auf deinem Gerät – nichts wird hochgeladen.</p>
+
+  <div id="maker">
+    <h2>📌 Aufgabe erstellen</h2>
+    <p class="sub" style="margin-bottom:0">Inhalte anhaken, Link kopieren und an die Klasse schicken (Teams, Mail, Tafel). Die Aufgabe erscheint bei den Schüler:innen auf der Startseite und rückt in den Tagesplan.</p>
+    <div class="mk-grid">
+      <div><label for="mk-title">Titel</label><input id="mk-title" type="text" maxlength="60" placeholder="z. B. Hausaufgabe bis Freitag"></div>
+      <div><label for="mk-due">Fällig am (optional)</label><input id="mk-due" type="date"></div>
+    </div>
+    <label for="mk-filter">Inhalte auswählen</label>
+    <input id="mk-filter" type="search" placeholder="Suchen, z. B. Pip, Simple Past, Klasse 6 …">
+    <div class="mk-lists" id="mk-lists"></div>
+    <div id="mk-out">
+      <label for="mk-base">Adresse der App (so, wie die Schüler:innen sie öffnen)</label>
+      <input id="mk-base" type="url" placeholder="https://….github.io/…/">
+      <label for="mk-link" style="margin-top:.7rem">Aufgaben-Link (<span id="mk-count">0</span> Inhalte)</label>
+      <textarea id="mk-link" readonly></textarea>
+      <button class="mk-btn" onclick="mkCopy()">Link kopieren</button>
+      <button class="mk-btn ghost" onclick="mkReset()">Auswahl leeren</button>
+      <p class="hint" style="margin-top:.6rem">Wichtig für iPads: Ist die App auf dem Home-Bildschirm installiert, öffnet sich der Link in Safari statt in der App. Die Schüler:innen kopieren dann den Link und tippen in der App auf der Startseite auf „📎 Aufgabe hinzufügen“.</p>
+    </div>
+  </div>
 
   <div id="drop" onclick="document.getElementById('file').click()">
     <p>📂 JSON-Dateien hierher ziehen oder klicken zum Auswählen</p>
@@ -48,7 +88,77 @@
   <p class="hint">Tipp: Spaltenkopf anklicken zum Sortieren · Strg+P für einen Ausdruck der Tabelle.</p>
 </div>
 
+<!-- Inhalte der App (für die Aufgaben-Auswahl und die Titel in der Tabelle) -->
+<script src="data/grammar.js"></script>
+<script src="data/vocab.js"></script>
+<script src="data/skills.js"></script>
 <script>
+// ═══════════════════════════════════════════════
+// AUFGABEN-LINK ERSTELLEN
+// Format (muss zu js/features/today.js passen):
+//   …/#aufgabe=<Base64 von {"v":1,"t":"Titel","d":"2026-11-20","i":["v:soul5b1","g:sp"]}>
+// ═══════════════════════════════════════════════
+const MK_GROUPS = [
+  {k:'v', title:'🔤 Vokabeln',  items: VOCAB.filter(t=>t.words && t.words.length).map(t=>({id:t.id, label:(t.emoji?t.emoji+' ':'')+t.title, meta:(t.cls?'Kl. '+t.cls+' · ':'')+t.words.length+' Wörter'}))},
+  {k:'g', title:'📚 Grammatik', items: GRAMMAR.map(t=>({id:t.id, label:t.title, meta:t.cls?'Kl. '+t.cls:''}))},
+  {k:'r', title:'📖 Reading',   items: READING.map(t=>({id:t.id, label:t.title, meta:t.level||''}))},
+  {k:'l', title:'🎧 Listening', items: LISTENING.map(t=>({id:t.id, label:t.title, meta:t.level||''}))},
+  {k:'w', title:'✏️ Writing',   items: WRITING.map(t=>({id:t.id, label:t.title, meta:t.level||''}))},
+  {k:'i', title:'📋 Weitere',   items: [{id:'all', label:'Irregular Verbs', meta:''}]}
+];
+const mkSel = new Set();
+function mkTitleOf(k, id){
+  const g = MK_GROUPS.find(g=>g.k===k); const it = g && g.items.find(x=>x.id===id);
+  return it ? it.label : k+':'+id;
+}
+function mkRender(){
+  const f = document.getElementById('mk-filter').value.trim().toLowerCase();
+  document.getElementById('mk-lists').innerHTML = MK_GROUPS.map(g=>{
+    const rows = g.items.filter(x=>!f || (x.label+' '+x.meta).toLowerCase().includes(f) || mkSel.has(g.k+':'+x.id));
+    if(!rows.length) return '';
+    return `<div class="mk-list"><h3>${g.title}</h3><div>${rows.map(x=>{
+      const key = g.k+':'+x.id;
+      return `<label class="mk-item"><input type="checkbox" ${mkSel.has(key)?'checked':''} onchange="mkToggle('${key}',this.checked)"> <span>${esc(x.label)}</span><small>${esc(x.meta)}</small></label>`;
+    }).join('')}</div></div>`;
+  }).join('');
+}
+function mkToggle(key, on){ if(on) mkSel.add(key); else mkSel.delete(key); mkUpdate(); }
+function mkBase(){
+  let b = document.getElementById('mk-base').value.trim();
+  if(!b) return '';
+  b = b.replace(/#.*$/,'').replace(/(teacher|index)\.html$/,'');
+  return b.endsWith('/') ? b : b + '/';
+}
+function mkUpdate(){
+  const out = document.getElementById('mk-out');
+  if(!mkSel.size){ out.style.display = 'none'; return; }
+  out.style.display = 'block';
+  const payload = {v:1, t:document.getElementById('mk-title').value.trim(), d:document.getElementById('mk-due').value||'', i:Array.from(mkSel)};
+  const code = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  document.getElementById('mk-link').value = mkBase() + '#aufgabe=' + code;
+  document.getElementById('mk-count').textContent = mkSel.size;
+}
+function mkCopy(){
+  const ta = document.getElementById('mk-link');
+  const b = document.querySelector('#mk-out .mk-btn');
+  const done = ()=>{ const old = b.textContent; b.textContent = '✓ Kopiert'; setTimeout(()=>b.textContent = old, 1500); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(ta.value).then(done).catch(()=>{ ta.select(); document.execCommand('copy'); done(); }); }
+  else { ta.select(); document.execCommand('copy'); done(); }
+}
+function mkReset(){ mkSel.clear(); mkRender(); mkUpdate(); }
+document.addEventListener('DOMContentLoaded', ()=>{
+  const base = document.getElementById('mk-base');
+  let saved = ''; try { saved = localStorage.getItem('ec_teacher_base')||''; } catch(e){}
+  base.value = saved || (location.protocol.indexOf('http')===0 ? new URL('./', location.href).href : '');
+  base.addEventListener('input', ()=>{ try { localStorage.setItem('ec_teacher_base', base.value.trim()); } catch(e){} mkUpdate(); });
+  ['mk-title','mk-due'].forEach(id=>document.getElementById(id).addEventListener('input', mkUpdate));
+  document.getElementById('mk-filter').addEventListener('input', mkRender);
+  mkRender();
+});
+
+// ═══════════════════════════════════════════════
+// KLASSENÜBERSICHT
+// ═══════════════════════════════════════════════
 const students = new Map(); // key: Name+Datei → Datensatz
 let sortKey = 'name', sortDir = 1;
 
@@ -104,6 +214,13 @@ function analyse(p, filename){
     checkDate: lastA ? lastA.date : '',
     checkTrend: (lastA && firstA && as.length>1) ? lastA.pct - firstA.pct : null,
     focus,
+    // Aufgaben: wie viele Inhalte erledigt, und ob selbst abgehakt statt geübt
+    tasks: (p.tasks||[]).map(t=>({
+      title: t.t || 'Aufgabe', due: t.d || '',
+      done: (t.items||[]).filter(x=>x.done).length, total: (t.items||[]).length,
+      self: (t.items||[]).filter(x=>x.done==='self').length,
+      open: (t.items||[]).filter(x=>!x.done).map(x=>mkTitleOf(x.k, x.id))
+    })),
     errors: p.errors||{}
   };
 }
@@ -134,6 +251,9 @@ function renderTable(){
   const focusHTML = r => r.focus.length
     ? r.focus.map(t=>`<span class="pill">${TOPIC_NAMES[t]||t}</span>`).join('')
     : (r.checkPct===null?'<span class="muted">kein Check</span>':'<span style="color:#059669;font-weight:600">✓ keine</span>');
+  const tasksHTML = r => (r.tasks||[]).length
+    ? r.tasks.map(t=>`<span class="pill ${t.done>=t.total?'ok':''}" title="${esc(t.open.length?'Offen: '+t.open.join(', '):'Alles erledigt')}">${esc(t.title)} ${t.done}/${t.total}${t.self?' · '+t.self+'× selbst abgehakt':''}</span>`).join('')
+    : '<span class="muted">–</span>';
   document.getElementById('tablewrap').innerHTML = rows.length ? `
   <div style="overflow-x:auto"><table>
     <thead><tr>
@@ -145,6 +265,7 @@ function renderTable(){
       <th onclick="setSort('grammarDone')" class="num">Grammatik</th>
       <th onclick="setSort('reading')" class="num">Read / Write</th>
       <th onclick="setSort('checkPct')">Sprach-Check</th>
+      <th>Aufgaben</th>
       <th>Schwerpunkte</th>
       <th onclick="setSort('lastDate')">Zuletzt aktiv</th>
     </tr></thead>
@@ -162,12 +283,13 @@ function renderTable(){
           <span style="font-weight:700">${r.checkPct}%</span>
           ${r.checkTrend!==null?`<span style="font-size:.72rem;color:${r.checkTrend>0?'#059669':r.checkTrend<0?'#DC2626':'#94A3B8'}">${r.checkTrend>0?'▲+':''}${r.checkTrend<0?'▼':''}${r.checkTrend!==0?r.checkTrend:'▬'}</span>`:''}
         </div><small class="muted">${r.checkDate}</small>`}</td>
+      <td style="max-width:16rem">${tasksHTML(r)}</td>
       <td style="max-width:16rem">${focusHTML(r)}</td>
       <td>${r.lastDate||'–'}</td>
     </tr>`).join('')}</tbody>
   </table></div>` : '';
 }
-function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
